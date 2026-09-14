@@ -51,7 +51,7 @@ export default function MaintenanceRequestsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const requests = data?.requests ?? [];
+const requests = useMemo(() => data?.requests ?? [], [data]);
 
   const departments = useMemo(() => Array.from(new Set(requests.map((r) => r.department))).sort(), [requests]);
 

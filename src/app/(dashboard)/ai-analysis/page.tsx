@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { RiskGauge } from "@/components/shared/risk-gauge";
 import { RiskFactorBar } from "@/components/shared/risk-factor-bar";
-import { Separator } from "@/components/ui/separator"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HistoricalContextPanel } from "@/components/historical/historical-context-panel";
@@ -56,8 +55,8 @@ function AiAnalysisContent() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: assetsRes, loading } = useFetch<{ assets: Asset[] }>(() => api.getAssets());
-  const assets = assetsRes?.assets ?? [];
+const { data: assetsRes, loading } = useFetch<{ assets: Asset[] }>(() => api.getAssets());
+  const assets = useMemo(() => assetsRes?.assets ?? [], [assetsRes]);
 
   const asset = useMemo(() => assets.find((a) => a.id === selectedAsset), [assets, selectedAsset]);
 

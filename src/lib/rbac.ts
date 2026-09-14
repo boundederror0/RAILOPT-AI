@@ -184,7 +184,9 @@ export function getRole(roleId: RoleId): Role {
 
 export function getUserPermissions(user: User): Permission[] {
   const role = getRole(user.role);
-  return user.permissions?.length ? [...new Set([...role.permissions, ...user.permissions])] : role.permissions;
+  return user.permissions?.length
+    ? Array.from(new Set([...role.permissions, ...user.permissions]))
+    : role.permissions;
 }
 
 export function hasPermission(user: User | null | undefined, permission: Permission): boolean {

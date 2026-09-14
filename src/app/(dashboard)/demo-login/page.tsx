@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { User, Shield, Briefcase, Settings, LogIn, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { Panel } from "@/components/shared/panel";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { DEMO_USERS } from "@/lib/rbac";
@@ -23,11 +22,23 @@ export default function DemoLoginPage() {
   const { login, isAuthenticated, user } = useAuth();
   const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  const handleLogin = (userId: string) => {
-    login(userId);
-    router.push("/");
-    router.refresh();
+  const handleLogin = async (userId: string) => {
+    if (loading) return;
+    setSelectedUser(userId);
+    setLoginError(null);
+    setLoading(true);
+    try {
+      await login(userId);
+      router.push("/");
+      router.refresh();
+    } catch (e) {
+      setLoading(false);
+      setSelectedUser(null);
+      setLoginError(e instanceof Error ? e.message : "Login failed. Please try again.");
+    }
   };
 
   if (isAuthenticated && !selectedUser) {
@@ -60,11 +71,18 @@ export default function DemoLoginPage() {
           No real railway credentials or authentication systems are involved.
         </div>
 
+        {loginError && (
+          <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <strong>Sign-in failed:</strong> {loginError}
+          </div>
+        )}
+
         {/* User Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {DEMO_USERS.map((demoUser) => {
             const Icon = ROLE_ICONS[demoUser.role] || User;
             const isCurrentUser = user?.id === demoUser.id;
+            const isBusy = loading && selectedUser === demoUser.id;
 
             return (
               <button
@@ -73,12 +91,12 @@ export default function DemoLoginPage() {
                   setSelectedUser(demoUser.id);
                   handleLogin(demoUser.id);
                 }}
-                disabled={isCurrentUser}
+                disabled={isCurrentUser || loading}
                 className={cn(
                   "relative group p-5 text-left transition-all hover:shadow-lg",
                   isCurrentUser
                     ? "border-2 border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/20 cursor-default"
-                    : "border border-slate-200 bg-white hover:border-amber-300"
+                    : "border border-slate-200 bg-white hover:border-amber-300 disabled:opacity-70 disabled:cursor-wait"
                 )}
               >
                 {isCurrentUser && (
@@ -119,9 +137,16 @@ export default function DemoLoginPage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-100">
-                  <p className="text-xs text-slate-400">
-                    Click to continue as this user
-                  </p>
+                  {isBusy ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                      <p className="text-xs text-slate-500">Signing in as {demoUser.name}...</p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">
+                      Click to continue as this user
+                    </p>
+                  )}
                 </div>
 
                 {!isCurrentUser && (
@@ -136,7 +161,7 @@ export default function DemoLoginPage() {
 
         {/* Footer note */}
         <div className="mt-10 text-center text-xs text-slate-400">
-          <p>For demonstration purposes only. No real authentication is performed.</p>
+          <p>For demonstration purposes only. Demo users map to server-side demo roles; no real credentials are used.</p>
           <p className="mt-1">
             Already logged in as{" "}
             <span className="font-medium text-slate-600">{user?.name}</span>{" "}

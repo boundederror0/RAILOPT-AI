@@ -1,10 +1,14 @@
 import { getStore } from "@/lib/store";
 import { ok, fail, parseJson } from "@/lib/server-utils";
+import { requirePermission } from "@/lib/auth/server-auth";
 import { riskService } from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  const guard = requirePermission("ai-analysis.run");
+  if ("error" in guard) return guard.error;
+
   const body = await parseJson<{ assetId?: string }>(req);
   if (!body || typeof body.assetId !== "string") {
     return fail("assetId is required.", 400);
@@ -33,7 +37,8 @@ export async function POST(req: Request) {
     action: "AI_ANALYSIS",
     entity: "Asset",
     entityId: asset.id,
-    details: `AI scored ${asset.name} at ${analysis.riskScore} (${analysis.riskCategory}).`,
+    performedBy: guard.user.name,
+    details: `${guard.user.name} ran AI scoring on ${asset.name}: ${analysis.riskScore} (${analysis.riskCategory}).`,
   });
 
   return ok({ analysis, prediction });

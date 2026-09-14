@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, priorityColor } from "@/lib/utils";
+import { AccessGuard } from "@/components/shared/access-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <div>
+    <AccessGuard requiredPermission="dashboard.view">
       <PageHeader
         title="Operational Dashboard"
         subtitle="Railway Maintenance & Block Planning · Southern Railway, Madurai Division"
@@ -286,7 +287,7 @@ export default function DashboardPage() {
           </div>
         </>
       )}
-    </div>
+    </AccessGuard>
   );
 }
 

@@ -8,9 +8,13 @@ export function fail(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
 }
 
+export const MAX_JSON_BODY_BYTES = 1_048_576;
+
 export async function parseJson<T>(req: Request): Promise<T | null> {
   try {
-    return (await req.json()) as T;
+    const text = await req.text();
+    if (text.length > MAX_JSON_BODY_BYTES) return null;
+    return JSON.parse(text) as T;
   } catch {
     return null;
   }

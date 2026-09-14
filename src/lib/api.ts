@@ -25,6 +25,10 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  login: <T>(userId: string) =>
+    request<T>("/api/auth/login", { method: "POST", body: JSON.stringify({ userId }) }),
+  me: <T>() => request<T>("/api/auth/me"),
+  logout: <T>() => request<T>("/api/auth/logout", { method: "POST", body: JSON.stringify({}) }),
   getDashboard: <T>() => request<T>("/api/dashboard"),
   getRequests: <T>() => request<T>("/api/maintenance-requests"),
   createRequest: <T>(body: unknown) =>

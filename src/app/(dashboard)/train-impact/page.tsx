@@ -86,7 +86,7 @@ export default function TrainImpactPage() {
   }, []);
 
   const { data: blocksRes, loading: blocksLoading } = useFetch<{ blocks: Block[] }>(() => api.getBlocks());
-  const blocks = blocksRes?.blocks ?? [];
+  const blocks = useMemo(() => blocksRes?.blocks ?? [], [blocksRes]);
 
   useEffect(() => {
     if (paramAutoRan.current) return;

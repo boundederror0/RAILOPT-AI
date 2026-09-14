@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ActionButton } from "@/components/shared/access-guard";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { RiskGauge } from "@/components/shared/risk-gauge";
 import { Separator } from "@/components/ui/separator";
@@ -221,9 +222,14 @@ export function RequestDetailDrawer({ open, onOpenChange, request, onEdit }: Req
                 </Link>
               </Button>
             ) : null}
-            <Button variant="ghost" size="sm" onClick={onEdit}>
+            <ActionButton
+              permission="maintenance.edit"
+              variant="ghost"
+              size="sm"
+              onClick={onEdit}
+            >
               <Wrench className="h-3.5 w-3.5" /> Edit
-            </Button>
+            </ActionButton>
           </div>
         </DrawerFooter>
       </DrawerContent>

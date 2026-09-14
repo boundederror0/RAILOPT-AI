@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requirePermission } from "@/lib/auth/server-auth";
 import {
   isHistoricalDataAvailable,
   getHistoricalManifest,
@@ -15,7 +16,13 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const guard = requirePermission("historical.view");
+  if ("error" in guard) return guard.error;
+
   const trainNumber = request.nextUrl.searchParams.get("train")?.trim() || null;
+  if (trainNumber && trainNumber.length > 30) {
+    return NextResponse.json({ error: "train parameter must be 30 characters or fewer." }, { status: 400 });
+  }
 
   const available = isHistoricalDataAvailable();
   const summary = getHistoricalSummary();

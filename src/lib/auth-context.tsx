@@ -1,14 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import type { User, RoleId, Permission } from "./rbac";
+import type { User, Permission } from "./rbac";
 import { DEMO_USERS, getUserPermissions, hasPermission, hasAnyPermission, hasAllPermissions } from "./rbac";
+import { api, ApiError } from "./api";
 
 interface AuthContextValue {
   user: User | null;
   users: User[];
-  login: (userId: string) => void;
-  logout: () => void;
+  login: (userId: string) => Promise<User>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   hasPermission: (permission: Permission) => boolean;
   hasAnyPermission: (permissions: Permission[]) => boolean;
@@ -25,32 +26,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const userId = JSON.parse(stored);
-          const found = DEMO_USERS.find((u) => u.id === userId);
-          if (found) setUser(found);
-        } catch {
-          localStorage.removeItem(STORAGE_KEY);
+    let active = true;
+    const restoreFromServer = async () => {
+      try {
+        const res = await api.me<{ user: User }>();
+        if (!active) return;
+        setUser(res.user);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(res.user.id));
         }
+      } catch {
+        const stored = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+        if (stored) {
+          try {
+            const userId = JSON.parse(stored);
+            const found = DEMO_USERS.find((u) => u.id === userId);
+            if (found) {
+              api
+                .login(userId)
+                .catch(() => null)
+                .then(() => {
+                  if (active) setUser(found);
+                });
+            }
+          } catch {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        }
+      } finally {
+        if (active) setHydrated(true);
       }
-      setHydrated(true);
-    }
+    };
+    restoreFromServer();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const login = (userId: string) => {
+  const login = async (userId: string): Promise<User> => {
     const found = DEMO_USERS.find((u) => u.id === userId);
-    if (found) {
-      setUser(found);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(userId));
-      }
+    if (!found) {
+      throw new ApiError(400, "Unknown demo user.");
     }
+    const res = await api.login<{ user: User }>(userId);
+    if (!res?.user) {
+      throw new ApiError(401, "Authentication failed. Please try again.");
+    }
+    setUser(res.user);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userId));
+    }
+    return res.user;
   };
 
-  const logout = () => {
+  const logout = async (): Promise<void> => {
+    try {
+      await api.logout();
+    } catch {
+      // still clear local UI state even if the server session already expired
+    }
     setUser(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);

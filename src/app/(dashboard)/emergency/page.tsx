@@ -24,8 +24,8 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
-import { OPERATOR_NAME } from "@/lib/store";
 import { cn, formatDateTime, minutesToHM } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 import { AccessGuard, ActionButton } from "@/components/shared/access-guard";
 
 interface Recommendation {
@@ -63,6 +63,7 @@ const SCENARIOS = [
 
 export default function EmergencyPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data, loading, reload } = useFetch<{ incidents: Incident[] }>(() => api.getIncidents());
   const [scenario, setScenario] = useState(0);
   const [detecting, setDetecting] = useState(false);
@@ -116,7 +117,7 @@ export default function EmergencyPage() {
       const approvals = await api.getApprovals<{ approvals: Approval[] }>();
       const approvable = approvals.approvals.find((a) => a.refId === incident.id && a.status === "Pending");
       if (approvable) {
-        await api.decideApproval(approvable.id, { decision, operator: OPERATOR_NAME });
+        await api.decideApproval(approvable.id, { decision });
       }
       if (decision === "Approved") setApprovedId(incident.id);
       toast(
@@ -294,7 +295,7 @@ export default function EmergencyPage() {
               <div className="rounded-lg border border-slate-200 bg-white p-4">
                 <p className="mb-3 text-xs text-slate-500">
                   <ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-amber-600" />
-                  RAILOPT recommends a revised schedule. <strong>Only an authorised operator can approve or reject.</strong> Signed in as {OPERATOR_NAME}.
+                  RAILOPT recommends a revised schedule. <strong>Only an authorised operator can approve or reject.</strong> Signed in as {user?.name ?? "—"}.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <ActionButton

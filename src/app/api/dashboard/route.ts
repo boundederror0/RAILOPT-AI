@@ -1,11 +1,14 @@
 import { getStore } from "@/lib/store";
 import { ok } from "@/lib/server-utils";
+import { requirePermission } from "@/lib/auth/server-auth";
 import { aggregateDashboard } from "@/lib/ai";
 import type { DashboardData } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const guard = requirePermission("dashboard.view");
+  if ("error" in guard) return guard.error;
   const store = getStore();
   const agg = await aggregateDashboard();
   const assets = store.getAssets();
@@ -44,36 +47,41 @@ export async function GET() {
             : "#3b82f6",
   }));
 
-  const trainDelayTrend = [
-    { date: "06 Sep", delay: 14, onTime: 9 },
-    { date: "07 Sep", delay: 18, onTime: 8 },
-    { date: "08 Sep", delay: 12, onTime: 10 },
-    { date: "09 Sep", delay: 21, onTime: 7 },
-    { date: "10 Sep", delay: 16, onTime: 9 },
-    { date: "11 Sep", delay: 11, onTime: 11 },
-    { date: "Today", delay: 22, onTime: 8 },
-  ];
+  const trainDelayTrend = (() => {
+    const byDate = new Map<string, { delay: number; onTime: number; sortKey: string }>();
+    for (const b of blocks) {
+      const d = new Date(b.startTime);
+      const key = `${d.getDate()} ${d.toLocaleString("en-US", { month: "short" })}`;
+      const entry = byDate.get(key) ?? { delay: 0, onTime: 0, sortKey: d.toISOString().slice(0, 10) };
+      entry.delay += b.expectedDelay;
+      if (b.expectedDelay === 0) entry.onTime += 1;
+      byDate.set(key, entry);
+    }
+    const sorted = Array.from(byDate.entries())
+      .sort((a, b) => a[1].sortKey.localeCompare(b[1].sortKey))
+      .map(([date, { delay, onTime }]) => ({ date, delay, onTime }));
+    if (sorted.length === 0) {
+      return [
+        { date: "Today", delay: 0, onTime: 0 },
+      ];
+    }
+    return sorted.slice(-7);
+  })();
 
-  const criticalAlerts = [
-    {
-      id: "1",
-      message: "Track circuit TC-01/12.4 km failing intermittently — Madurai–Melur",
-      severity: "Critical",
-      time: "05:12",
-    },
-    {
-      id: "2",
-      message: "Point machine PM-33/34B detection failure — Tiruchirappalli",
-      severity: "High",
-      time: "06:45",
-    },
-    {
-      id: "3",
-      message: "LC-72 warning gong intermittent — Mandapam",
-      severity: "Moderate",
-      time: "07:30",
-    },
-  ];
+  const incidents = store.getIncidents();
+  const criticalAlerts = incidents
+    .filter((inc) => inc.status !== "Resolved")
+    .sort((a, b) => {
+      const order: Record<string, number> = { Critical: 0, High: 1, Moderate: 2, Low: 3 };
+      return (order[a.severity] ?? 9) - (order[b.severity] ?? 9);
+    })
+    .slice(0, 5)
+    .map((inc) => ({
+      id: inc.id,
+      message: `${inc.type} — ${inc.location} (${inc.section})`,
+      severity: inc.severity,
+      time: new Date(inc.detectedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    }));
 
   const activeCount = blocks.filter((b) => b.status === "Active").length;
   const approvedCount = blocks.filter((b) => b.status === "Approved").length;

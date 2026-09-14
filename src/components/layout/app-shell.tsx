@@ -5,28 +5,44 @@ import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const { hasPermission } = useAuth();
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [activeIncidents, setActiveIncidents] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
+    const canViewApprovals = hasPermission("approval.view");
+    const canViewIncidents =
+      hasPermission("emergency.view") || hasPermission("live-operations.view");
+    if (!canViewApprovals && !canViewIncidents) {
+      setPendingApprovals(0);
+      setActiveIncidents(0);
+      return;
+    }
     const load = () => {
-      Promise.all([
-        api.getApprovals<{ approvals: { status: string }[] }>(),
-        api.getIncidents<{ incidents: { status: string; severity: string }[] }>(),
-      ])
-        .then(([approvals, incidents]) => {
+      const jobs: Promise<{ approvals?: { status: string }[]; incidents?: { status: string }[] }>[] = [];
+      if (canViewApprovals) {
+        jobs.push(api.getApprovals<{ approvals: { status: string }[] }>());
+      }
+      if (canViewIncidents) {
+        jobs.push(api.getIncidents<{ incidents: { status: string }[] }>());
+      }
+      Promise.all(jobs)
+        .then((results) => {
           if (!mounted) return;
+          const approvals = results.find((r) => r.approvals);
+          const incidents = results.find((r) => r.incidents);
           setPendingApprovals(
-            approvals.approvals.filter((a) => a.status === "Pending").length
+            approvals?.approvals?.filter((a) => a.status === "Pending").length ?? 0
           );
           setActiveIncidents(
-            incidents.incidents.filter(
+            incidents?.incidents?.filter(
               (i) => i.status !== "Resolved" && i.status !== "Mitigated"
-            ).length
+            ).length ?? 0
           );
         })
         .catch(() => {
@@ -42,7 +58,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       mounted = false;
       clearInterval(interval);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasPermission]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">

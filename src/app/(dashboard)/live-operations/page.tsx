@@ -21,10 +21,11 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, priorityColor } from "@/lib/utils";
-import {OPERATOR_NAME} from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
 import { AccessGuard } from "@/components/shared/access-guard";
 
 export default function LiveOperationsPage() {
+  const { user } = useAuth();
   const { data, loading, reload } = useFetch<{ trains: TrainSchedule[]; blocks: Block[]; teams: MaintenanceTeam[]; assets: Asset[] }>(() =>
     Promise.all([
       api.getTrains<{ trains: TrainSchedule[] }>(),
@@ -145,7 +146,7 @@ export default function LiveOperationsPage() {
       <div className="mb-3 flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-2.5 text-xs text-blue-700">
         <Layers className="h-3.5 w-3.5" />
         <span className="font-medium">Operational window: </span>
-        <span>SIM {simTime.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false })} · Authority: {OPERATOR_NAME}</span>
+        <span>SIM {simTime.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false })} · Authority: {user?.name ?? "—"}</span>
       </div>
 
       {/* At-a-glance status strip */}

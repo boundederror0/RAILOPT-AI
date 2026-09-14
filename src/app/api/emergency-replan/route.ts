@@ -1,5 +1,6 @@
 import { getStore } from "@/lib/store";
 import { ok, fail, parseJson } from "@/lib/server-utils";
+import { requirePermission } from "@/lib/auth/server-auth";
 import { validateIncidentInput } from "@/lib/validation";
 import { emergencyReplanService, incidentTypeFor } from "@/lib/ai";
 import type { Incident } from "@/lib/types";
@@ -7,6 +8,9 @@ import type { Incident } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  const guard = requirePermission("emergency.replan");
+  if ("error" in guard) return guard.error;
+
   const body = await parseJson<unknown>(req);
   const { error, data } = validateIncidentInput(body);
   if (error) return fail(error, 400);
@@ -43,7 +47,8 @@ export async function POST(req: Request) {
     action: "AI_INCIDENT",
     entity: "Incident",
     entityId: incident.id,
-    details: `AI detected ${incident.type} (${incident.severity}) at ${incident.section}.`,
+    performedBy: guard.user.name,
+    details: `${guard.user.name} initiated AI incident response for ${incident.type} (${incident.severity}) at ${incident.section}.`,
   });
 
   if (recommendation.recommendedBlock) {

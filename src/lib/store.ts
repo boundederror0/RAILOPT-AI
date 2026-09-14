@@ -213,6 +213,7 @@ class Store {
       action: decision.toUpperCase(),
       entity: a.type,
       entityId: a.id,
+      performedBy,
       details: `${performedBy} ${decision.toLowerCase()} "${a.title}"${modifyNote ? ` — ${modifyNote}` : ""}.`,
     });
     if (a.type === "Block Plan" && decision === "Approved") {

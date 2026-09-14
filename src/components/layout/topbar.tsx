@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Circle, User, ChevronDown, Menu, LogOut, Shield, Users, Settings, CheckCircle2 } from "lucide-react";
+import { Bell, Circle, User, ChevronDown, Menu, LogOut, Users, Settings, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -29,9 +29,10 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
     healthy: true,
     label: "All systems nominal",
   });
-  const { user, logout, users, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
 
   useEffect(() => {
+    if (!isAuthenticated) return undefined;
     let mounted = true;
     api
       .getSystemStatus<{ healthy: boolean; label: string }>()
@@ -40,7 +41,7 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated || !user) {
     return (

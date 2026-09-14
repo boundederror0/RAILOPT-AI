@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
-import { OPERATOR_NAME, OPERATOR_ROLE } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
 import { cn, formatDateTime } from "@/lib/utils";
 import { AccessGuard } from "@/components/shared/access-guard";
 
@@ -37,11 +37,20 @@ interface SystemStatus {
 interface SimParamsResponse {
   params: SimulationParams;
   defaults: SimulationParams;
-  config: { weeklyWindowStart: string; weeklyWindowEnd: string; peakHoursEnforced: boolean; teamCapacityBuffer: number };
+  config: {
+    maxSimultaneousBlocksPerLocation: number;
+    defaultMaxTeams: number;
+    trainPriorityWeight: number;
+    nightWindowStart: number;
+    nightWindowEnd: number;
+    maxTrainsPerDelayBand: number;
+    simulationEnabled: boolean;
+  };
 }
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [sim, setSim] = useState<SimulationParams | null>(null);
   const [defaults, setDefaults] = useState<SimulationParams | null>(null);
   const [sys, setSys] = useState<SystemStatus | null>(null);
@@ -50,21 +59,25 @@ export default function SettingsPage() {
   const [savedFlash, setSavedFlash] = useState(false);
   const [logs, setLogs] = useState<AuditLog[]>([]);
 
-  const load = async () => {
+const load = async () => {
     try {
-      const [simRes, sysRes, logsRes] = await Promise.all([
+      const [simRes, sysRes] = await Promise.all([
         api.getSimulationParams<SimParamsResponse>(),
         api.getSystemStatus<SystemStatus>(),
-        api.getAuditLogs<{ logs: AuditLog[] }>(),
       ]);
       setSim(simRes.params);
       setDefaults(simRes.defaults);
       setSys(sysRes);
-      setLogs(logsRes.logs);
     } catch (e) {
       toast("Failed to load settings", { description: e instanceof Error ? e.message : "Try again", variant: "error" });
     } finally {
       setLoading(false);
+    }
+    try {
+      const logsRes = await api.getAuditLogs<{ logs: AuditLog[] }>();
+      setLogs(logsRes.logs);
+    } catch {
+      setLogs([]);
     }
   };
 
@@ -179,9 +192,9 @@ export default function SettingsPage() {
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white">
                 <User className="h-5 w-5" />
               </span>
-              <div>
-                <p className="text-sm font-semibold text-slate-900">{OPERATOR_NAME}</p>
-                <p className="text-xs text-slate-500">{OPERATOR_ROLE}</p>
+<div>
+                <p className="text-sm font-semibold text-slate-900">{user?.name ?? "—"}</p>
+                <p className="text-xs text-slate-500">{user?.designation ?? "No user signed in"}</p>
               </div>
               <Badge variant="green" className="ml-auto">Authorised</Badge>
             </div>
@@ -242,7 +255,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Recent audit */}
-      <Panel title="Recent audit activity" description="Latest 8 recorded actions" className="mt-4" contentClassName="p-0">
+      <Panel title="Recent audit activity" description="Latest 8 recorded actions — visible to System Administrators" className="mt-4" contentClassName="p-0">
         <div className="divide-y divide-slate-100">
           {logs.slice(0, 8).map((log) => (
             <div key={log.id} className="flex items-start justify-between gap-3 px-4 py-2.5">
@@ -253,7 +266,7 @@ export default function SettingsPage() {
               <span className="shrink-0 text-[11px] text-slate-400">{formatDateTime(log.timestamp)}</span>
             </div>
           ))}
-          {logs.length === 0 && <p className="p-4 text-xs text-slate-400">No audit entries yet.</p>}
+          {logs.length === 0 && <p className="p-4 text-xs text-slate-400">No audit entries yet — audit logs are visible to System Administrators only.</p>}
         </div>
       </Panel>
     </div>

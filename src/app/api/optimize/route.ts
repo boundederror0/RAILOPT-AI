@@ -1,5 +1,6 @@
 import { getStore } from "@/lib/store";
 import { ok, fail, parseJson } from "@/lib/server-utils";
+import { requirePermission } from "@/lib/auth/server-auth";
 import { validateOptimizeRequest } from "@/lib/validation";
 import { blockOptimizer, type OptimizerParams } from "@/lib/ai";
 import { DEFAULT_SIM_PARAMS } from "@/lib/store";
@@ -12,6 +13,8 @@ export async function POST(req: Request) {
   if (error) return fail(error, 400);
 
   const isSimulation = body?.simulate === true;
+  const guard = requirePermission(isSimulation ? "simulation.run" : "optimizer.run");
+  if ("error" in guard) return guard.error;
 
   const store = getStore();
   const requests = store.getRequests();
@@ -51,7 +54,8 @@ export async function POST(req: Request) {
     action: "AI_OPTIMIZE",
     entity: "Block Plan",
     entityId: saved.id,
-    details: `Optimizer produced ${saved.totalRequestsScheduled} blocks, ${saved.estimatedDelay} min expected delay, score ${saved.optimizationScore}.`,
+    performedBy: guard.user.name,
+    details: `${guard.user.name} triggered optimizer — produced ${saved.totalRequestsScheduled} blocks, ${saved.estimatedDelay} min expected delay, score ${saved.optimizationScore}.`,
   });
 
   if (saved.blocks.length > 0) {

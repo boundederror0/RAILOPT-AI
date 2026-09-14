@@ -1,9 +1,12 @@
 import { getStore } from "@/lib/store";
 import { ok } from "@/lib/server-utils";
+import { requireAuth } from "@/lib/auth/server-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const guard = requireAuth();
+  if ("error" in guard) return guard.error;
   const store = getStore();
   const incidents = store.getIncidents();
   const pending = store.getApprovals().filter((a) => a.status === "Pending").length;

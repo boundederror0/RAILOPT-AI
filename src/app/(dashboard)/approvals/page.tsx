@@ -29,16 +29,17 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { AccessGuard, ActionButton } from "@/components/shared/access-guard";
-import { OPERATOR_NAME } from "@/lib/store";
 import { cn, formatDateTime } from "@/lib/utils";
 
 export default function ApprovalsPage() {
   const { toast } = useToast();
   const { data, loading, error, reload } = useFetch<{ approvals: Approval[] }>(() => api.getApprovals());
   const { data: logsRes } = useFetch<{ logs: AuditLog[] }>(() => api.getAuditLogs());
-  const [decidingId, setDecidingId] = useState<string | null>(null);
+const [decidingId, setDecidingId] = useState<string | null>(null);
   const [modifyTarget, setModifyTarget] = useState<Approval | null>(null);
   const [modifyNote, setModifyNote] = useState("");
+  const [rejectTarget, setRejectTarget] = useState<Approval | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
 
   const approvals = data?.approvals ?? [];
   const pending = approvals.filter((a) => a.status === "Pending");
@@ -52,20 +53,39 @@ export default function ApprovalsPage() {
     );
   }, [decided]);
 
-  const decide = async (a: Approval, decision: "Approved" | "Rejected") => {
+const decide = async (a: Approval, decision: "Approved") => {
     setDecidingId(a.id);
     try {
-      const res = await api.decideApproval<{ approval: Approval }>(a.id, { decision, operator: OPERATOR_NAME });
+      const res = await api.decideApproval<{ approval: Approval }>(a.id, { decision });
       toast(
-        decision === "Approved" ? `Approved ${res.approval.title}` : `Rejected ${res.approval.title}`,
+        `Approved ${res.approval.title}`,
         {
-          description:
-            decision === "Approved"
-              ? "The recommendation is now applied and the audit log is updated."
-              : "The recommendation was declined; no operational change.",
-          variant: decision === "Approved" ? "success" : "info",
+          description: "The recommendation is now applied and the audit log is updated.",
+          variant: "success",
         }
       );
+      reload();
+    } catch (e) {
+      toast("Action failed", { description: e instanceof Error ? e.message : "Try again", variant: "error" });
+    } finally {
+      setDecidingId(null);
+    }
+  };
+
+  const submitReject = async () => {
+    if (!rejectTarget) return;
+    setDecidingId(rejectTarget.id);
+    try {
+      const res = await api.decideApproval<{ approval: Approval }>(rejectTarget.id, {
+        decision: "Rejected",
+        note: rejectNote,
+      });
+      toast(`Rejected ${res.approval.title}`, {
+        description: "The recommendation was declined with a recorded reason; no operational change.",
+        variant: "info",
+      });
+      setRejectTarget(null);
+      setRejectNote("");
       reload();
     } catch (e) {
       toast("Action failed", { description: e instanceof Error ? e.message : "Try again", variant: "error" });
@@ -78,7 +98,7 @@ export default function ApprovalsPage() {
     if (!modifyTarget) return;
     setDecidingId(modifyTarget.id);
     try {
-      await api.decideApproval(modifyTarget.id, { decision: "Modified", operator: OPERATOR_NAME, note: modifyNote });
+      await api.decideApproval(modifyTarget.id, { decision: "Modified", note: modifyNote });
       toast("Recommendation modified", { description: "Marked as modified with your note. No automatic application.", variant: "success" });
       setModifyTarget(null);
       setModifyNote("");
@@ -191,11 +211,11 @@ export default function ApprovalsPage() {
                         >
                           {decidingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Approve
                         </ActionButton>
-                        <ActionButton
+<ActionButton
                           permission="approval.decide"
                           variant="outline"
                           size="sm"
-                          onClick={() => decide(a, "Rejected")}
+                          onClick={() => { setRejectTarget(a); setRejectNote(""); }}
                           disabled={decidingId === a.id}
                         >
                           <X className="h-3.5 w-3.5" /> Reject
@@ -274,11 +294,44 @@ export default function ApprovalsPage() {
               />
             </div>
           )}
-          <DialogFooter>
+<DialogFooter>
             <Button variant="ghost" onClick={() => setModifyTarget(null)}>Cancel</Button>
             <Button onClick={submitModify} disabled={decidingId === modifyTarget?.id}>
               {decidingId === modifyTarget?.id && <Loader2 className="h-4 w-4 animate-spin" />}
               Save modification
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject dialog */}
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject recommendation</DialogTitle>
+            <DialogDescription>
+              A reason is required so the rejection can be traced in the audit log.
+            </DialogDescription>
+          </DialogHeader>
+          {rejectTarget && (
+            <div className="space-y-3">
+              <div className="rounded-md bg-slate-50 p-3 text-xs">
+                <p className="font-medium text-slate-800">{rejectTarget.title}</p>
+                <p className="mt-1 text-slate-500">{rejectTarget.description}</p>
+              </div>
+              <Textarea
+                value={rejectNote}
+                onChange={(e) => setRejectNote(e.target.value)}
+                placeholder="e.g. Block conflicts with planned patrol train, re-run with updated inputs…"
+                aria-label="Rejection note"
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRejectTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={submitReject} disabled={decidingId === rejectTarget?.id || !rejectNote.trim()}>
+              {decidingId === rejectTarget?.id && <Loader2 className="h-4 w-4 animate-spin" />}
+              Confirm rejection
             </Button>
           </DialogFooter>
         </DialogContent>

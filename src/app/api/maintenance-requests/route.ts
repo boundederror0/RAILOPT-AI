@@ -1,5 +1,6 @@
-import { getStore, OPERATOR_NAME } from "@/lib/store";
+import { getStore } from "@/lib/store";
 import { ok, fail, parseJson } from "@/lib/server-utils";
+import { requireAnyPermission, requirePermission } from "@/lib/auth/server-auth";
 import { validateRequestInput } from "@/lib/validation";
 import { riskService } from "@/lib/ai";
 import type { MaintenanceRequest } from "@/lib/types";
@@ -7,12 +8,16 @@ import type { MaintenanceRequest } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const guard = requireAnyPermission(["maintenance.view", "maintenance.create", "simulation.view"]);
+  if ("error" in guard) return guard.error;
   const store = getStore();
   const requests = store.getRequests();
   return ok({ requests });
 }
 
 export async function POST(req: Request) {
+  const guard = requirePermission("maintenance.create");
+  if ("error" in guard) return guard.error;
   const body = await parseJson<Record<string, unknown>>(req);
   if (!body) return fail("Invalid JSON body.", 400);
 
@@ -35,7 +40,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const nextNumber = existing.length + 1;
+  const nextNumber =
+    existing.reduce((max, r) => {
+      const n = /^MR-2026-(\d{4})$/.exec(r.id);
+      return n ? Math.max(max, Number(n[1])) : max;
+    }, 0) + 1;
   const request: MaintenanceRequest = {
     id: `MR-2026-${String(nextNumber).padStart(4, "0")}`,
     assetId: asset.id,
@@ -69,8 +78,8 @@ export async function POST(req: Request) {
     action: "REQUESTED",
     entity: "Maintenance Request",
     entityId: created.id,
-    performedBy: OPERATOR_NAME,
-    details: `${OPERATOR_NAME} created ${created.id} for ${asset.name} at ${asset.location}.`,
+    performedBy: guard.user.name,
+    details: `${guard.user.name} created ${created.id} for ${asset.name} at ${asset.location}.`,
   });
 
   return ok({ request: created, analysis }, 201);

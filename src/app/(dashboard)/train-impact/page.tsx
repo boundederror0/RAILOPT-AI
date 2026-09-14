@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { cn, minutesToHM } from "@/lib/utils";
+import { AccessGuard } from "@/components/shared/access-guard";
 
 type Severity = "None" | "Minor" | "Moderate" | "High" | "Severe";
 
@@ -173,16 +174,17 @@ export default function TrainImpactPage() {
   const selectedBlockObj = blocks.find((b) => b.id === selectedBlock);
 
   return (
-    <div>
-      <PageHeader
-        title="Train Impact Analysis"
-        subtitle="Compute how a maintenance block affects running trains on the affected section"
-        actions={
-          <Badge variant="outline" className="gap-1.5 py-1">
-            <Train className="h-3.5 w-3.5 text-blue-600" /> Delays weighted by train priority
-          </Badge>
-        }
-      />
+    <AccessGuard requiredPermission="train-impact.view">
+      <div>
+        <PageHeader
+          title="Train Impact Analysis"
+          subtitle="Compute how a maintenance block affects running trains on the affected section"
+          actions={
+            <Badge variant="outline" className="gap-1.5 py-1">
+              <Train className="h-3.5 w-3.5 text-blue-600" /> Delays weighted by train priority
+            </Badge>
+          }
+        />
 
       <WorkflowBar current={3} context={{ block: selectedBlockObj?.id || result?.block.id }} />
 
@@ -375,6 +377,7 @@ export default function TrainImpactPage() {
         </div>
       </div>
     </div>
+    </AccessGuard>
   );
 }
 

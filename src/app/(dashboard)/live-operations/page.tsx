@@ -22,6 +22,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, priorityColor } from "@/lib/utils";
 import {OPERATOR_NAME} from "@/lib/store";
+import { AccessGuard } from "@/components/shared/access-guard";
 
 export default function LiveOperationsPage() {
   const { data, loading, reload } = useFetch<{ trains: TrainSchedule[]; blocks: Block[]; teams: MaintenanceTeam[]; assets: Asset[] }>(() =>
@@ -117,26 +118,27 @@ export default function LiveOperationsPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Live Operations"
-        subtitle="Simulated real-time railway status. All data below is demonstration only."
-        actions={
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1.5 py-1">
-              <Radio className="h-3.5 w-3.5 animate-pulse text-emerald-600" />
-              DEMO DATA
-            </Badge>
-            <div className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-mono text-slate-700">
-              <Clock className="h-4 w-4 text-slate-400" />
-              {clock}
+    <AccessGuard requiredPermission="live-operations.view">
+      <div>
+        <PageHeader
+          title="Live Operations"
+          subtitle="Simulated real-time railway status. All data below is demonstration only."
+          actions={
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="gap-1.5 py-1">
+                <Radio className="h-3.5 w-3.5 animate-pulse text-emerald-600" />
+                DEMO DATA
+              </Badge>
+              <div className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-mono text-slate-700">
+                <Clock className="h-4 w-4 text-slate-400" />
+                {clock}
+              </div>
+              <Button variant="ghost" size="sm" onClick={reload}>
+                <RefreshCw className="h-3.5 w-3.5" />
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" onClick={reload}>
-              <RefreshCw className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        }
-      />
+          }
+        />
 
       <WorkflowBar current={6} />
 
@@ -265,5 +267,6 @@ export default function LiveOperationsPage() {
         </div>
       </div>
     </div>
+    </AccessGuard>
   );
 }

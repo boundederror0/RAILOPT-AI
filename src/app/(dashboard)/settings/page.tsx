@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { OPERATOR_NAME, OPERATOR_ROLE } from "@/lib/store";
 import { cn, formatDateTime } from "@/lib/utils";
+import { AccessGuard } from "@/components/shared/access-guard";
 
 interface SystemStatus {
   healthy: boolean;
@@ -113,22 +114,23 @@ export default function SettingsPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Settings"
-        subtitle="Simulation, operator and artificial intelligence configuration"
-        actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={reset}>
-              <RotateCcw className="h-4 w-4" /> Reset defaults
-            </Button>
-            <Button onClick={save} disabled={!sim || saving}>
-              {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : savedFlash ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {savedFlash ? "Saved" : "Save changes"}
-            </Button>
-          </div>
-        }
-      />
+    <AccessGuard requiredPermission="profile.view">
+      <div>
+        <PageHeader
+          title="Settings"
+          subtitle="Simulation, operator and artificial intelligence configuration"
+          actions={
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={reset}>
+                <RotateCcw className="h-4 w-4" /> Reset defaults
+              </Button>
+              <Button onClick={save} disabled={!sim || saving}>
+                {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : savedFlash ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+                {savedFlash ? "Saved" : "Save changes"}
+              </Button>
+            </div>
+          }
+        />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Simulation params */}
@@ -255,6 +257,7 @@ export default function SettingsPage() {
         </div>
       </Panel>
     </div>
+    </AccessGuard>
   );
 }
 

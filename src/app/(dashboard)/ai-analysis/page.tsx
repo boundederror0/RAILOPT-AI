@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator"; // eslint-disable-line @t
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HistoricalContextPanel } from "@/components/historical/historical-context-panel";
+import { AccessGuard } from "@/components/shared/access-guard";
 
 interface AnalysisResult {
   assetId: string;
@@ -75,17 +76,18 @@ function AiAnalysisContent() {
   };
 
   return (
-    <div>
-      <PageHeader
-        title="AI Risk Analysis"
-        subtitle="Explainable asset risk scoring from age, condition, failure history and usage"
-        actions={
-          <Badge variant="outline" className="gap-1.5 py-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-            Model: deterministic scoring engine v1 — no real ML model running
-          </Badge>
-        }
-      />
+    <AccessGuard requiredPermission="ai-analysis.view">
+      <div>
+        <PageHeader
+          title="AI Risk Analysis"
+          subtitle="Explainable asset risk scoring from age, condition, failure history and usage"
+          actions={
+            <Badge variant="outline" className="gap-1.5 py-1">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+              Model: deterministic scoring engine v1 — no real ML model running
+            </Badge>
+          }
+        />
 
       <WorkflowBar current={1} context={{ asset: analysis?.assetId || selectedAsset || undefined }} />
 
@@ -237,6 +239,7 @@ function AiAnalysisContent() {
         </div>
       </div>
     </div>
+    </AccessGuard>
   );
 }
 

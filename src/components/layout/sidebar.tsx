@@ -18,69 +18,44 @@ import {
   BarChart3,
   Settings,
 } from "lucide-react";
-import React from "react";
+import { useAuth } from "@/lib/auth-context";
+import { getAccessibleNavGroups } from "@/lib/rbac";
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  LayoutDashboard,
+  History,
+  Wrench,
+  BrainCircuit,
+  CalendarRange,
+  Train,
+  FlaskConical,
+  Radio,
+  AlertTriangle,
+  CheckCircle2,
+  BarChart3,
+  Settings,
+};
 
-const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
-  {
-    label: "Operations",
-    items: [
-      { label: "Dashboard", href: "/", icon: LayoutDashboard },
-      { label: "Maintenance Requests", href: "/maintenance-requests", icon: Wrench },
-      { label: "Live Operations", href: "/live-operations", icon: Radio },
-      { label: "Emergency Replanning", href: "/emergency", icon: AlertTriangle },
-    ],
-  },
-  {
-    label: "Decision Support",
-    items: [
-      { label: "AI Analysis", href: "/ai-analysis", icon: BrainCircuit },
-      { label: "Block Optimizer", href: "/block-optimizer", icon: CalendarRange },
-      { label: "Train Impact", href: "/train-impact", icon: Train },
-      { label: "What-If Simulation", href: "/what-if", icon: FlaskConical },
-      { label: "Approvals", href: "/approvals", icon: CheckCircle2 },
-    ],
-  },
-  {
-    label: "Intelligence",
-    items: [
-      { label: "Historical Intelligence", href: "/historical-intelligence", icon: History },
-      { label: "Analytics", href: "/analytics", icon: BarChart3 },
-    ],
-  },
-  {
-    label: "System",
-    items: [{ label: "Settings", href: "/settings", icon: Settings }],
-  },
-];
-
-interface SidebarProps {
-  pendingCount?: number;
-}
-
-export function Sidebar({ pendingCount = 0 }: SidebarProps) {
+export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const navGroups = getAccessibleNavGroups(user);
 
   return (
     <aside className="flex h-screen w-[240px] flex-col bg-sidebar text-slate-300">
       {/* Brand */}
-      <div className="flex items-center gap-3 border-b border-white/10 px-4 py-4">
+      <div className="flex items-center gap-3.5 border-b border-white/10 px-4 py-5">
         <Image
           src="/railopt-logo.png"
           alt="RAILOPT AI"
           width={1024}
           height={1024}
-          className="h-14 w-14 shrink-0 object-contain"
+          className="h-[72px] w-[72px] shrink-0 object-contain"
         />
         <div className="min-w-0 leading-tight">
           <span className="block text-sm font-bold tracking-wide text-white">RAILOPT AI</span>
           <span className="mt-1 block text-[10px] leading-snug text-slate-400">
-            Intelligent Railway Maintenance &amp; Block Planning
+            Intelligent Railway Maintenance & Block Planning
           </span>
         </div>
       </div>
@@ -88,7 +63,7 @@ export function Sidebar({ pendingCount = 0 }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         <div className="space-y-4">
-          {NAV_GROUPS.map((group) => (
+          {navGroups.map((group) => (
             <div key={group.label}>
               <p className="mb-0.5 px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 {group.label}
@@ -97,7 +72,7 @@ export function Sidebar({ pendingCount = 0 }: SidebarProps) {
                 {group.items.map((item) => {
                   const isActive =
                     item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-                  const Icon = item.icon;
+                  const Icon = ICON_MAP[item.iconName];
                   return (
                     <Link
                       key={item.href}

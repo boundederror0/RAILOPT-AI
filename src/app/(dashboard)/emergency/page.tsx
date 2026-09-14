@@ -26,6 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
 import { OPERATOR_NAME } from "@/lib/store";
 import { cn, formatDateTime, minutesToHM } from "@/lib/utils";
+import { AccessGuard, ActionButton } from "@/components/shared/access-guard";
 
 interface Recommendation {
   incidentId: string;
@@ -141,21 +142,22 @@ export default function EmergencyPage() {
   };
 
   return (
-    <div>
-      <PageHeader
-        title="Emergency Replanning"
-        subtitle="AI detects incidents, proposes revised schedules — a human operator decides"
-        actions={
-          <div className="flex items-center gap-2">
-            <Badge variant={criticalCount > 0 ? "red" : "green"} className="gap-1.5 py-1">
-              <Siren className="h-3.5 w-3.5" /> {criticalCount} active incident{criticalCount === 1 ? "" : "s"}
-            </Badge>
-            <Badge variant="outline" className="gap-1.5 py-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-amber-600" /> Human-in-the-loop
-            </Badge>
-          </div>
-        }
-      />
+    <AccessGuard requiredPermission="emergency.view">
+      <div>
+        <PageHeader
+          title="Emergency Replanning"
+          subtitle="AI detects incidents, proposes revised schedules — a human operator decides"
+          actions={
+            <div className="flex items-center gap-2">
+              <Badge variant={criticalCount > 0 ? "red" : "green"} className="gap-1.5 py-1">
+                <Siren className="h-3.5 w-3.5" /> {criticalCount} active incident{criticalCount === 1 ? "" : "s"}
+              </Badge>
+              <Badge variant="outline" className="gap-1.5 py-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-amber-600" /> Human-in-the-loop
+              </Badge>
+            </div>
+          }
+        />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Scenario simulation */}
@@ -295,21 +297,23 @@ export default function EmergencyPage() {
                   RAILOPT recommends a revised schedule. <strong>Only an authorised operator can approve or reject.</strong> Signed in as {OPERATOR_NAME}.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Button
+                  <ActionButton
+                    permission="emergency.replan"
                     variant="success"
                     onClick={() => decide(latest.incident, "Approved")}
                     disabled={decidingIds.has(latest.incident.id) || approvedId === latest.incident.id}
                   >
                     {decidingIds.has(latest.incident.id) ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                     {approvedId === latest.incident.id ? "Replan applied" : "Approve Replan"}
-                  </Button>
-                  <Button
+                  </ActionButton>
+                  <ActionButton
+                    permission="emergency.replan"
                     variant="outline"
                     onClick={() => decide(latest.incident, "Rejected")}
                     disabled={decidingIds.has(latest.incident.id) || approvedId === latest.incident.id}
                   >
                     <X className="h-4 w-4" /> Reject
-                  </Button>
+                  </ActionButton>
                   <Button variant="ghost" onClick={() => setDetailIncident(latest.incident)}>
                     <Eye className="h-4 w-4" /> Review Details
                   </Button>
@@ -355,6 +359,7 @@ export default function EmergencyPage() {
         </div>
       )}
     </div>
+    </AccessGuard>
   );
 }
 

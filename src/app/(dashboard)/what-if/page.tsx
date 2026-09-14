@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { minutesToHM, cn } from "@/lib/utils";
+import { AccessGuard } from "@/components/shared/access-guard";
 
 type SimPlan = BlockPlan;
 
@@ -121,16 +122,17 @@ export default function WhatIfPage() {
   }, [baseline, current]);
 
   return (
-    <div>
-      <PageHeader
-        title="What-If Simulation"
-        subtitle="Tune planning parameters and watch the optimizer re-plan in near real time — no approvals created"
-        actions={
-          <Badge variant="outline" className="gap-1.5 py-1">
-            <FlaskConical className="h-3.5 w-3.5 text-blue-600" /> Simulation mode — results are not persisted
-          </Badge>
-        }
-      />
+    <AccessGuard requiredPermission="simulation.view">
+      <div>
+        <PageHeader
+          title="What-If Simulation"
+          subtitle="Tune planning parameters and watch the optimizer re-plan in near real time — no approvals created"
+          actions={
+            <Badge variant="outline" className="gap-1.5 py-1">
+              <FlaskConical className="h-3.5 w-3.5 text-blue-600" /> Simulation mode — results are not persisted
+            </Badge>
+          }
+        />
 
       <WorkflowBar current={4} context={{ block: contextBlock || undefined }} />
 
@@ -325,6 +327,7 @@ export default function WhatIfPage() {
         </div>
       )}
     </div>
+    </AccessGuard>
   );
 }
 

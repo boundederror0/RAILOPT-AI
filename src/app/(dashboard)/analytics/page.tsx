@@ -27,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { AccessGuard } from "@/components/shared/access-guard";
 
 type Range = "7d" | "30d" | "90d";
 const RANGES: Range[] = ["7d", "30d", "90d"];
@@ -65,27 +66,28 @@ export default function AnalyticsPage() {
   })();
 
   return (
-    <div>
-      <PageHeader
-        title="Analytics"
-        subtitle="Operational performance, workload, risk and availability insights"
-        actions={
-          <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-white p-0.5">
-            {RANGES.map((r) => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                className={cn(
-                  "rounded px-3 py-1.5 text-xs font-medium transition-colors",
-                  range === r ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900"
-                )}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        }
-      />
+    <AccessGuard requiredPermission="analytics.view">
+      <div>
+        <PageHeader
+          title="Analytics"
+          subtitle="Operational performance, workload, risk and availability insights"
+          actions={
+            <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-white p-0.5">
+              {RANGES.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={cn(
+                    "rounded px-3 py-1.5 text-xs font-medium transition-colors",
+                    range === r ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-900"
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          }
+        />
 
       {loading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -240,6 +242,7 @@ export default function AnalyticsPage() {
         </div>
       )}
     </div>
+    </AccessGuard>
   );
 }
 

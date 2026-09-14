@@ -28,6 +28,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast";
+import { AccessGuard, ActionButton } from "@/components/shared/access-guard";
 import { OPERATOR_NAME } from "@/lib/store";
 import { cn, formatDateTime } from "@/lib/utils";
 
@@ -90,16 +91,17 @@ export default function ApprovalsPage() {
   };
 
   return (
-    <div>
-      <PageHeader
-        title="Approval Center"
-        subtitle="Every AI recommendation is reviewed and decided by an authorised human operator"
-        actions={
-          <Badge variant="outline" className="gap-1.5 py-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> {pending.length} pending · {decided.length} decided
-          </Badge>
-        }
-      />
+    <AccessGuard requiredPermission="approval.view">
+      <div>
+        <PageHeader
+          title="Approval Center"
+          subtitle="Every AI recommendation is reviewed and decided by an authorised human operator"
+          actions={
+            <Badge variant="outline" className="gap-1.5 py-1">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> {pending.length} pending · {decided.length} decided
+            </Badge>
+          }
+        />
 
       <WorkflowBar current={5} />
 
@@ -180,12 +182,24 @@ export default function ApprovalsPage() {
                         Recommended by RAILOPT AI · {a.type} · created {formatDateTime(a.createdAt)}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Button variant="success" size="sm" onClick={() => decide(a, "Approved")} disabled={decidingId === a.id}>
+                        <ActionButton
+                          permission="approval.decide"
+                          variant="success"
+                          size="sm"
+                          onClick={() => decide(a, "Approved")}
+                          disabled={decidingId === a.id}
+                        >
                           {decidingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Approve
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => decide(a, "Rejected")} disabled={decidingId === a.id}>
+                        </ActionButton>
+                        <ActionButton
+                          permission="approval.decide"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => decide(a, "Rejected")}
+                          disabled={decidingId === a.id}
+                        >
                           <X className="h-3.5 w-3.5" /> Reject
-                        </Button>
+                        </ActionButton>
                         <Button variant="ghost" size="sm" onClick={() => { setModifyTarget(a); setModifyNote(""); }}>
                           <SlidersHorizontal className="h-3.5 w-3.5" /> Modify
                         </Button>
@@ -270,6 +284,7 @@ export default function ApprovalsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </AccessGuard>
   );
 }
 

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Circle, User, ChevronDown, Menu } from "lucide-react";
+import { Bell, Circle, User, ChevronDown, Menu, LogOut, Shield, Users, Settings, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { OPERATOR_NAME, OPERATOR_ROLE } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface TopbarProps {
   pendingApprovals: number;
@@ -26,6 +29,7 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
     healthy: true,
     label: "All systems nominal",
   });
+  const { user, logout, users, isAuthenticated } = useAuth();
 
   useEffect(() => {
     let mounted = true;
@@ -37,6 +41,31 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
       mounted = false;
     };
   }, []);
+
+  if (!isAuthenticated || !user) {
+    return (
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur">
+        <div className="flex min-w-0 items-center gap-2 text-sm">
+          <span className="truncate font-medium text-slate-700">Madurai Division Operations</span>
+          <span className="text-slate-300">/</span>
+          <span className="hidden truncate text-slate-500 sm:inline">Live Control Room</span>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/demo-login">Select Demo User</Link>
+          </Button>
+        </div>
+      </header>
+    );
+  }
+
+  const roleColors: Record<string, string> = {
+    DIVISIONAL_OPERATIONS_CONTROLLER: "bg-slate-900 text-white",
+    MAINTENANCE_ENGINEER: "bg-amber-100 text-amber-700",
+    SECTION_CONTROLLER: "bg-blue-100 text-blue-700",
+    OPERATIONS_ANALYST: "bg-indigo-100 text-indigo-700",
+    SYSTEM_ADMINISTRATOR: "bg-red-100 text-red-700",
+  };
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur">
@@ -122,30 +151,66 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-white">
+              <span className={cn("flex h-7 w-7 items-center justify-center rounded-full", roleColors[user.role] ?? "bg-slate-800 text-white")}>
                 <User className="h-4 w-4" />
               </span>
               <span className="hidden text-left leading-tight md:block">
-                <span className="block text-xs font-medium text-slate-800">{OPERATOR_NAME}</span>
-                <span className="block text-[10px] text-slate-500">{OPERATOR_ROLE}</span>
+                <span className="block text-xs font-medium text-slate-800">{user.name}</span>
+                <span className="block text-[10px] text-slate-500">{user.designation}</span>
               </span>
               <ChevronDown className="hidden h-3.5 w-3.5 text-slate-400 md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel>
-              {OPERATOR_NAME} — {OPERATOR_ROLE}
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="flex flex-col items-start gap-1">
+              <span>{user.name}</span>
+              <span className="text-xs font-normal text-slate-500">{user.designation}</span>
+              <Badge
+                variant={
+                  user.role === "DIVISIONAL_OPERATIONS_CONTROLLER" ? "default" :
+                  user.role === "MAINTENANCE_ENGINEER" ? "amber" :
+                  user.role === "SECTION_CONTROLLER" ? "blue" :
+                  user.role === "OPERATIONS_ANALYST" ? "indigo" : "red"
+                }
+                className="text-[10px]"
+              >
+                {user.role.replace(/_/g, " ")}
+              </Badge>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/settings">Operator settings</Link>
+              <Link href="/settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Operator settings
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/approvals">Approval center</Link>
+              <Link href="/approvals" className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                Approval center
+              </Link>
             </DropdownMenuItem>
+            {user.role === "SYSTEM_ADMINISTRATOR" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/demo-login" className="flex items-center gap-2 text-amber-600">
+                    <Users className="h-4 w-4" />
+                    Switch Demo User
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/settings">Sign out (demo)</Link>
+            <DropdownMenuItem
+              onClick={() => {
+                logout();
+                window.location.href = "/demo-login";
+              }}
+              className="flex items-center gap-2 text-red-600"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out (demo)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

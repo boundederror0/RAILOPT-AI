@@ -53,7 +53,7 @@ export default function DashboardPage() {
         title="Operational Dashboard"
         subtitle="Railway Maintenance & Block Planning · Southern Railway, Madurai Division"
         actions={
-          <Button variant="amber" className="gap-1.5">
+          <Button variant="amber" asChild className="gap-1.5">
             <Link href="/block-optimizer">
               Open Optimizer <ArrowRight className="h-4 w-4" />
             </Link>
@@ -162,7 +162,7 @@ export default function DashboardPage() {
               description="Approved & proposed possessions"
               className="lg:col-span-7"
               action={
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/block-optimizer">
                     View optimizer <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
               description="Latest raised requests across the division"
               className="lg:col-span-7"
               action={
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/maintenance-requests">
                     All requests <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
@@ -246,7 +246,7 @@ export default function DashboardPage() {
                       No pending approvals.
                     </div>
                   )}
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" asChild className="w-full">
                     <Link href="/approvals">Go to Approvals</Link>
                   </Button>
                 </div>
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   ))}
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" asChild className="w-full">
                     <Link href="/emergency">Go to Emergency Replanning</Link>
                   </Button>
                 </div>

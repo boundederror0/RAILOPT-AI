@@ -18,6 +18,7 @@ import { RequestFormDialog } from "@/components/maintenance/request-form-dialog"
 import { RequestDetailDrawer } from "@/components/maintenance/request-detail-drawer";
 import { WorkflowBar } from "@/components/shared/workflow-bar";
 import { priorityColor } from "@/lib/utils";
+import { AccessGuard, WithPermission } from "@/components/shared/access-guard";
 
 type SortKey = "id" | "assetName" | "location" | "priority" | "riskScore" | "requestedDate" | "status";
 
@@ -129,16 +130,19 @@ export default function MaintenanceRequestsPage() {
   }, [search, status, priority, department]);
 
   return (
-    <div>
-      <PageHeader
-        title="Maintenance Requests"
-        subtitle="All open and historical maintenance requests across the division"
-        actions={
-          <Button onClick={() => { setEditRequest(null); setPrefillAsset(null); setCreateOpen(true); }}>
-            <Plus className="h-4 w-4" /> New Request
-          </Button>
-        }
-      />
+    <AccessGuard requiredPermission="maintenance.view">
+      <div>
+        <PageHeader
+          title="Maintenance Requests"
+          subtitle="All open and historical maintenance requests across the division"
+          actions={
+            <WithPermission permission="maintenance.create">
+              <Button onClick={() => { setEditRequest(null); setPrefillAsset(null); setCreateOpen(true); }}>
+                <Plus className="h-4 w-4" /> New Request
+              </Button>
+            </WithPermission>
+          }
+        />
 
       <WorkflowBar current={0} />
 
@@ -258,7 +262,9 @@ export default function MaintenanceRequestsPage() {
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-1">
                         <Button variant="ghost" size="sm" onClick={() => { setDetailRequest(r); setDrawerOpen(true); }}>Details</Button>
-                        <Button variant="ghost" size="sm" onClick={() => { setEditRequest(r); setCreateOpen(true); }}>Edit</Button>
+                        <WithPermission permission="maintenance.edit">
+                          <Button variant="ghost" size="sm" onClick={() => { setEditRequest(r); setCreateOpen(true); }}>Edit</Button>
+                        </WithPermission>
                       </div>
                     </td>
                   </tr>
@@ -300,5 +306,6 @@ export default function MaintenanceRequestsPage() {
         onEdit={() => { if (detailRequest) { setEditRequest(detailRequest); setCreateOpen(true); } }}
       />
     </div>
+    </AccessGuard>
   );
 }

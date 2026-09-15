@@ -1,0 +1,16 @@
+﻿RAILOPT protected-route inventory  (captured 2026-09-15 09:44:00Z)
+====================================================================================================
+HTTP method | route                                          | guard (permission gate)
+----------------------------------------------------------------------------------------------------GET         | analytics                                               | analytics.view
+POST        | approvals\[id]\decision                                 | approvals.approve
+GET         | approvals                                               | approvals.view
+GET         | audit-logs                                              | system.manage
+GET         | dashboard                                               | dashboard.view
+            | dashboard                                               | ANY[dashboard.view, train_impact.view, optimizer.view, live_operations.view, simulation.view, error, error, Excellent]
+GET         | historical\summary                                      | historical.view
+PATCH       | maintenance-requests\[id]                               | maintenance.edit
+POST        | maintenance-requests                                    | maintenance.create
+GET         | request-tracking                                        | requests.track
+POST        | risk-analysis                                           | ai_analysis.run
+POST        | simulation                                              | settings.view
+POST        | train-impact                                            | train_impact.view

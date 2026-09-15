@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { ok } from "@/lib/server-utils";
-import { AUTH_COOKIE, clearSessionCookie, revokeSession } from "@/lib/auth/server-auth";
+import { AUTH_COOKIE } from "@/lib/auth/auth-config";
+import { clearSessionCookie, revokeSession } from "@/lib/auth/server-auth";
 
 export const dynamic = "force-dynamic";
 

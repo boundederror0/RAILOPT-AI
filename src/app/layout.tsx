@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { AppShell } from "@/components/layout/app-shell";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProviderWrapper } from "@/components/auth/auth-provider";
 
@@ -37,9 +36,7 @@ export default function RootLayout({
       <head />
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ToastProvider>
-          <AuthProviderWrapper>
-            <AppShell>{children}</AppShell>
-          </AuthProviderWrapper>
+          <AuthProviderWrapper>{children}</AuthProviderWrapper>
         </ToastProvider>
       </body>
     </html>

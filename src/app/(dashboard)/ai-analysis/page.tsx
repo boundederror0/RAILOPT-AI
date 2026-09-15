@@ -75,7 +75,7 @@ const { data: assetsRes, loading } = useFetch<{ assets: Asset[] }>(() => api.get
   };
 
   return (
-    <AccessGuard requiredPermission="ai-analysis.view">
+    <AccessGuard requiredPermission="ai_analysis.view">
       <div>
         <PageHeader
           title="AI Risk Analysis"

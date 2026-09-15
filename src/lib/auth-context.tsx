@@ -1,14 +1,21 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import type { User, Permission } from "./rbac";
-import { DEMO_USERS, getUserPermissions, hasPermission, hasAnyPermission, hasAllPermissions } from "./rbac";
+import type { User, Permission, Posting } from "./rbac";
+import {
+  POSTINGS,
+  hasPermission,
+  hasAnyPermission,
+  hasAllPermissions,
+  postingToUser,
+} from "./rbac";
 import { api, ApiError } from "./api";
 
 interface AuthContextValue {
   user: User | null;
   users: User[];
-  login: (userId: string) => Promise<User>;
+  postings: Posting[];
+  login: (postingId: string, password: string, zoneId: string, divisionId: string) => Promise<User>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   hasPermission: (permission: Permission) => boolean;
@@ -19,7 +26,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const STORAGE_KEY = "railopt-demo-user";
+const STORAGE_KEY = "railopt-demo-posting";
+const USERS = POSTINGS.map(postingToUser);
+const POSTING_BY_ID = new Map(POSTINGS.map((p) => [p.id, p]));
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -36,22 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(res.user.id));
         }
       } catch {
-        const stored = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
-        if (stored) {
-          try {
-            const userId = JSON.parse(stored);
-            const found = DEMO_USERS.find((u) => u.id === userId);
-            if (found) {
-              api
-                .login(userId)
-                .catch(() => null)
-                .then(() => {
-                  if (active) setUser(found);
-                });
-            }
-          } catch {
-            localStorage.removeItem(STORAGE_KEY);
-          }
+        // The server session is gone. Without the demo password we cannot
+        // silently re-authenticate, so clear the stored posting.
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(STORAGE_KEY);
         }
       } finally {
         if (active) setHydrated(true);
@@ -63,18 +60,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = async (userId: string): Promise<User> => {
-    const found = DEMO_USERS.find((u) => u.id === userId);
-    if (!found) {
-      throw new ApiError(400, "Unknown demo user.");
+  const login = async (postingId: string, password: string, zoneId: string, divisionId: string): Promise<User> => {
+    const posting = POSTING_BY_ID.get(postingId);
+    if (!posting) {
+      throw new ApiError(400, "Unknown posting.");
     }
-    const res = await api.login<{ user: User }>(userId);
+    const res = await api.login<{ user: User }>(postingId, password, zoneId, divisionId);
     if (!res?.user) {
       throw new ApiError(401, "Authentication failed. Please try again.");
     }
     setUser(res.user);
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userId));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(postingId));
     }
     return res.user;
   };
@@ -94,14 +91,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkPermission = (permission: Permission) => hasPermission(user, permission);
   const checkAnyPermission = (permissions: Permission[]) => hasAnyPermission(user, permissions);
   const checkAllPermissions = (permissions: Permission[]) => hasAllPermissions(user, permissions);
-  const getPerms = () => getUserPermissions(user ?? ({} as User));
+  const getPerms = () => (user?.permissions ? [...user.permissions] : []);
 
   if (!hydrated) {
     return (
       <AuthContext.Provider
         value={{
           user: null,
-          users: DEMO_USERS,
+          users: USERS,
+          postings: POSTINGS,
           login,
           logout,
           isAuthenticated: false,
@@ -120,7 +118,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        users: DEMO_USERS,
+        users: USERS,
+        postings: POSTINGS,
         login,
         logout,
         isAuthenticated: !!user,

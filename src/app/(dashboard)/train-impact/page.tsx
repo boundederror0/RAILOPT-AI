@@ -174,7 +174,7 @@ export default function TrainImpactPage() {
   const selectedBlockObj = blocks.find((b) => b.id === selectedBlock);
 
   return (
-    <AccessGuard requiredPermission="train-impact.view">
+    <AccessGuard requiredPermission="train_impact.view">
       <div>
         <PageHeader
           title="Train Impact Analysis"

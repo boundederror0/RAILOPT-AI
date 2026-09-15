@@ -6,7 +6,7 @@ import { riskService } from "@/lib/ai";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const guard = requirePermission("ai-analysis.run");
+  const guard = requirePermission("ai_analysis.run");
   if ("error" in guard) return guard.error;
 
   const body = await parseJson<{ assetId?: string }>(req);

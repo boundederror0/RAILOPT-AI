@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const guard = requireAnyPermission([
-    "ai-analysis.view",
+    "ai_analysis.view",
     "maintenance.create",
     "optimizer.view",
-    "live-operations.view",
+    "live_operations.view",
   ]);
   if ("error" in guard) return guard.error;
   const store = getStore();

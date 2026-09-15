@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   BarChart3,
   Settings,
+  ListOrdered,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessibleNavGroups } from "@/lib/rbac";
@@ -34,6 +35,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   CheckCircle2,
   BarChart3,
   Settings,
+  ListOrdered,
 };
 
 export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {

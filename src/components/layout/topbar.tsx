@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Circle, User, ChevronDown, Menu, LogOut, Users, Settings, CheckCircle2 } from "lucide-react";
+import { Bell, Circle, User, ChevronDown, Menu, LogOut, Settings, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { scopeDisplay } from "@/lib/rbac";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,7 +54,7 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/demo-login">Select Demo User</Link>
+            <Link href="/login">Sign in</Link>
           </Button>
         </div>
       </header>
@@ -61,11 +62,14 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
   }
 
   const roleColors: Record<string, string> = {
-    DIVISIONAL_OPERATIONS_CONTROLLER: "bg-slate-900 text-white",
-    MAINTENANCE_ENGINEER: "bg-amber-100 text-amber-700",
-    SECTION_CONTROLLER: "bg-blue-100 text-blue-700",
-    OPERATIONS_ANALYST: "bg-indigo-100 text-indigo-700",
-    SYSTEM_ADMINISTRATOR: "bg-red-100 text-red-700",
+    ZONE_ADMIN_OVERSIGHT: "bg-rail-maroon text-white",
+    ZONE_OPERATIONS: "bg-slate-800 text-white",
+    DIVISION_ADMINISTRATION: "bg-rail-navy text-white",
+    DIVISION_OPERATIONS: "bg-slate-900 text-white",
+    DIVISION_ENGINEERING: "bg-amber-100 text-amber-700",
+    DIVISION_MECHANICAL: "bg-blue-100 text-blue-700",
+    DIVISION_ELECTRICAL: "bg-yellow-100 text-yellow-700",
+    DIVISION_ST: "bg-indigo-100 text-indigo-700",
   };
 
   return (
@@ -156,26 +160,19 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
                 <User className="h-4 w-4" />
               </span>
               <span className="hidden text-left leading-tight md:block">
-                <span className="block text-xs font-medium text-slate-800">{user.name}</span>
-                <span className="block text-[10px] text-slate-500">{user.designation}</span>
+                <span className="block text-xs font-medium text-slate-800">{user.shortName} · {user.title}</span>
+                <span className="block text-[10px] text-slate-500">{user.designation} · {scopeDisplay(user)}</span>
               </span>
               <ChevronDown className="hidden h-3.5 w-3.5 text-slate-400 md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-64">
             <DropdownMenuLabel className="flex flex-col items-start gap-1">
               <span>{user.name}</span>
               <span className="text-xs font-normal text-slate-500">{user.designation}</span>
-              <Badge
-                variant={
-                  user.role === "DIVISIONAL_OPERATIONS_CONTROLLER" ? "default" :
-                  user.role === "MAINTENANCE_ENGINEER" ? "amber" :
-                  user.role === "SECTION_CONTROLLER" ? "blue" :
-                  user.role === "OPERATIONS_ANALYST" ? "indigo" : "red"
-                }
-                className="text-[10px]"
-              >
-                {user.role.replace(/_/g, " ")}
+              <span className="text-[10px] font-normal text-slate-400">{scopeDisplay(user)}</span>
+              <Badge className="text-[10px]">
+                {user.organizationalLevel.toLowerCase()} authority · {user.roleProfileId.replace(/_/g, " ")}
               </Badge>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -191,22 +188,11 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
                 Approval center
               </Link>
             </DropdownMenuItem>
-            {user.role === "SYSTEM_ADMINISTRATOR" && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/demo-login" className="flex items-center gap-2 text-amber-600">
-                    <Users className="h-4 w-4" />
-                    Switch Demo User
-                  </Link>
-                </DropdownMenuItem>
-              </>
-            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
                 logout();
-                window.location.href = "/demo-login";
+                window.location.href = "/login";
               }}
               className="flex items-center gap-2 text-red-600"
             >

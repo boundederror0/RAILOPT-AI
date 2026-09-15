@@ -15,6 +15,7 @@ import {
   Activity,
   BrainCircuit,
   CalendarRange,
+  Send,
 } from "lucide-react";
 import {
   Drawer,
@@ -34,6 +35,7 @@ import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
 import { priorityColor } from "@/lib/utils";
 import { windowReasoningFor } from "@/lib/window-reasoning";
+import { useToast } from "@/components/ui/toast";
 import type { MaintenanceRequest } from "@/lib/types";
 
 interface RequestDetailDrawerProps {
@@ -41,10 +43,13 @@ interface RequestDetailDrawerProps {
   onOpenChange: (open: boolean) => void;
   request: MaintenanceRequest | null;
   onEdit?: () => void;
+  onSubmitted?: () => void;
 }
 
-export function RequestDetailDrawer({ open, onOpenChange, request, onEdit }: RequestDetailDrawerProps) {
+export function RequestDetailDrawer({ open, onOpenChange, request, onEdit, onSubmitted }: RequestDetailDrawerProps) {
   const [trains, setTrains] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!open || !request) return;
@@ -54,6 +59,20 @@ export function RequestDetailDrawer({ open, onOpenChange, request, onEdit }: Req
       setTrains(named.length ? named : request.affectedTrains.slice(0, 3));
     }).catch(() => setTrains(request.affectedTrains.slice(0, 3)));
   }, [open, request]);
+
+  const handleSubmit = async () => {
+    if (!request || submitting) return;
+    setSubmitting(true);
+    try {
+      await api.updateRequest(request.id, { status: "In Review" });
+      toast("Request submitted for approval", { description: `${request.id} moved to In Review.`, variant: "success" });
+      onSubmitted?.();
+    } catch (e) {
+      toast("Submit failed", { description: e instanceof Error ? e.message : "Try again", variant: "error" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (!request) return null;
 
@@ -221,6 +240,17 @@ export function RequestDetailDrawer({ open, onOpenChange, request, onEdit }: Req
                   <CalendarRange className="h-3.5 w-3.5" /> Plan in optimizer
                 </Link>
               </Button>
+            ) : null}
+            {request.status === "Open" ? (
+              <ActionButton
+                permission="maintenance.submit"
+                variant="outline"
+                size="sm"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
+                <Send className="h-3.5 w-3.5" /> Submit for approval
+              </ActionButton>
             ) : null}
             <ActionButton
               permission="maintenance.edit"

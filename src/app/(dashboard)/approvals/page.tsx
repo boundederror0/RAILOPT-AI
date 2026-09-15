@@ -111,7 +111,7 @@ const decide = async (a: Approval, decision: "Approved") => {
   };
 
   return (
-    <AccessGuard requiredPermission="approval.view">
+    <AccessGuard requiredPermission="approvals.view">
       <div>
         <PageHeader
           title="Approval Center"
@@ -203,7 +203,7 @@ const decide = async (a: Approval, decision: "Approved") => {
                       </p>
                       <div className="flex items-center gap-2">
                         <ActionButton
-                          permission="approval.decide"
+                          permission="approvals.approve"
                           variant="success"
                           size="sm"
                           onClick={() => decide(a, "Approved")}
@@ -212,7 +212,7 @@ const decide = async (a: Approval, decision: "Approved") => {
                           {decidingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Approve
                         </ActionButton>
 <ActionButton
-                          permission="approval.decide"
+                          permission="approvals.approve"
                           variant="outline"
                           size="sm"
                           onClick={() => { setRejectTarget(a); setRejectNote(""); }}

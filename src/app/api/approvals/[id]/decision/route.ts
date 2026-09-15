@@ -5,7 +5,7 @@ import { requirePermission } from "@/lib/auth/server-auth";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
-  const guard = requirePermission("approval.decide");
+  const guard = requirePermission("approvals.approve");
   if ("error" in guard) return guard.error;
 
   const body = await parseJson<{ decision?: string; note?: string }>(req);
@@ -24,6 +24,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (!approval) return fail("Approval not found.", 404);
   if (approval.status !== "Pending") {
     return fail(`This recommendation has already been ${approval.status.toLowerCase()}.`, 409);
+  }
+
+  // A user may never approve a recommendation they created themselves.
+  if (approval.createdByUserId && approval.createdByUserId === guard.user.id) {
+    return fail("You cannot approve a recommendation you created.", 403);
   }
 
   const operator = guard.user.name;

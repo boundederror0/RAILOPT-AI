@@ -3,6 +3,12 @@ import { ok, fail, parseJson } from "@/lib/server-utils";
 import { requireAnyPermission, requirePermission } from "@/lib/auth/server-auth";
 import { validateRequestInput } from "@/lib/validation";
 import { riskService } from "@/lib/ai";
+import {
+  DEPARTMENT_REQUEST_LABEL,
+  TECHNICAL_DEPARTMENTS,
+  canAccessRequestDepartment,
+  isDepartmentScoped,
+} from "@/lib/rbac";
 import type { MaintenanceRequest } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +18,12 @@ export async function GET() {
   if ("error" in guard) return guard.error;
   const store = getStore();
   const requests = store.getRequests();
-  return ok({ requests });
+  // Department-scoped postings (divisional technical engineers) only see their
+  // own department's requests. Oversight/admin/ops postings see everything.
+  const scoped = isDepartmentScoped(guard.user)
+    ? requests.filter((r) => canAccessRequestDepartment(guard.user, r.department))
+    : requests;
+  return ok({ requests: scoped });
 }
 
 export async function POST(req: Request) {
@@ -52,7 +63,11 @@ export async function POST(req: Request) {
     assetType: asset.type,
     location: asset.location,
     section: asset.section,
-    department: data!.priority === "Critical" || data!.priority === "High" ? "Signalling" : "Track",
+    department: TECHNICAL_DEPARTMENTS.has(guard.user.department)
+      ? DEPARTMENT_REQUEST_LABEL[guard.user.department]
+      : data!.priority === "Critical" || data!.priority === "High"
+        ? "Signalling"
+        : "Track",
     issue: data!.issue as string,
     description: data!.description as string,
     priority: data!.priority as MaintenanceRequest["priority"],

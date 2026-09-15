@@ -25,8 +25,11 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  login: <T>(userId: string) =>
-    request<T>("/api/auth/login", { method: "POST", body: JSON.stringify({ userId }) }),
+  login: <T>(postingId: string, password: string, zoneId: string, divisionId: string) =>
+    request<T>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ postingId, password, zoneId, divisionId }),
+    }),
   me: <T>() => request<T>("/api/auth/me"),
   logout: <T>() => request<T>("/api/auth/logout", { method: "POST", body: JSON.stringify({}) }),
   getDashboard: <T>() => request<T>("/api/dashboard"),
@@ -53,6 +56,7 @@ export const api = {
     request<T>("/api/emergency-replan", { method: "POST", body: JSON.stringify(body) }),
   getAnalytics: <T>(range: string) => request<T>(`/api/analytics?range=${range}`),
   getApprovals: <T>() => request<T>("/api/approvals"),
+  getRequestTracking: <T>() => request<T>("/api/request-tracking"),
   decideApproval: <T>(id: string, body: unknown) =>
     request<T>(`/api/approvals/${id}/decision`, { method: "POST", body: JSON.stringify(body) }),
   getAuditLogs: <T>() => request<T>("/api/audit-logs"),

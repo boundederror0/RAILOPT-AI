@@ -1,0 +1,26 @@
+PASS | permission ids are canonical underscore (no legacy hyphen) | 29 ids
+PASS | requests.track is a canonical permission id (union member) | in union
+FAIL | requests.track exists in the LEGACY_RENAMES doc table → no app use of legacy | LEGACY_RENAMES exported
+PASS | all profile grants resolve to canonical union (no typo'd permission) | ? profiles
+PASS | requests.track granted in every technical/department profile | see 14-row matrix
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+POSTING (id/level/dept/zone/division) | requests.track | scope
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+GM        ZONAL        ADMINISTRATION Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 15 perms
+PCOM      ZONAL        OPERATING      Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 23 perms
+PCE       ZONAL        ENGINEERING    Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 14 perms
+PCME      ZONAL        MECHANICAL     Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 14 perms
+PCEE      ZONAL        ELECTRICAL     Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 14 perms
+PCSTE     ZONAL        SIGNAL_AND_TELECOMMUNICATION Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 14 perms
+DRM       DIVISIONAL   DIVISIONAL_ADMINISTRATION Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 14 perms
+SR_DOM    DIVISIONAL   OPERATING      Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 24 perms
+DOM       DIVISIONAL   OPERATING      Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 17 perms
+SR_DEN    DIVISIONAL   ENGINEERING    Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 17 perms
+DEN       DIVISIONAL   ENGINEERING    Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 17 perms
+SR_DME    DIVISIONAL   MECHANICAL     Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 17 perms
+SR_DEE    DIVISIONAL   ELECTRICAL     Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 17 perms
+SR_DSTE   DIVISIONAL   SIGNAL_AND_TELECOMMUNICATION Southern Railway Madurai Division                   | track     | ? (isDepartmentScoped missing)                   | 17 perms
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SUMMARY: 14/14 postings grant requests.track
+PASS | authorization exports authorization-scope helpers | NAV_PERMISSIONS,hasPermission,hasAnyPermission,hasAllPermissions,isDepartmentScoped,canAccessRequestDepartment,scopeDisplay,getNavPermission,canAccessRoute,getAccessibleNavGroups
+requests.track | nav metadata: /request-tracking requires | 

@@ -127,7 +127,7 @@ const load = async () => {
   }
 
   return (
-    <AccessGuard requiredPermission="profile.view">
+    <AccessGuard requiredPermission="settings.view">
       <div>
         <PageHeader
           title="Settings"
@@ -194,7 +194,8 @@ const load = async () => {
               </span>
 <div>
                 <p className="text-sm font-semibold text-slate-900">{user?.name ?? "—"}</p>
-                <p className="text-xs text-slate-500">{user?.designation ?? "No user signed in"}</p>
+                <p className="text-xs text-slate-500">{user?.designation ?? "No requirement signed in"}</p>
+                <p className="text-[11px] text-slate-400">{user?.scope ?? ""}</p>
               </div>
               <Badge variant="green" className="ml-auto">Authorised</Badge>
             </div>
@@ -254,8 +255,8 @@ const load = async () => {
         </div>
       </div>
 
-      {/* Recent audit */}
-      <Panel title="Recent audit activity" description="Latest 8 recorded actions — visible to System Administrators" className="mt-4" contentClassName="p-0">
+{/* Recent audit */}
+      <Panel title="Recent audit activity" description="Latest 8 recorded actions — restricted to administration access" className="mt-4" contentClassName="p-0">
         <div className="divide-y divide-slate-100">
           {logs.slice(0, 8).map((log) => (
             <div key={log.id} className="flex items-start justify-between gap-3 px-4 py-2.5">

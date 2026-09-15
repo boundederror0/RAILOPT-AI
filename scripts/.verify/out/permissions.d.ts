@@ -1,0 +1,3 @@
+export type Permission = "dashboard.view" | "maintenance.view" | "maintenance.create" | "maintenance.edit" | "maintenance.submit" | "ai_analysis.view" | "ai_analysis.run" | "optimizer.view" | "optimizer.run" | "optimizer.recommend" | "train_impact.view" | "simulation.view" | "simulation.run" | "emergency.view" | "emergency.create" | "emergency.recommend" | "approvals.view" | "approvals.recommend" | "approvals.approve" | "live_operations.view" | "live_operations.monitor" | "live_operations.coordinate" | "requests.track" | "analytics.view" | "historical.view" | "settings.view" | "users.manage" | "roles.manage" | "system.manage";
+export declare const ALL_PERMISSIONS: Permission[];
+export declare const LEGACY_PERMISSION_RENAMES: Record<string, string>;

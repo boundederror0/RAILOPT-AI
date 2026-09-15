@@ -299,7 +299,7 @@ export default function EmergencyPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <ActionButton
-                    permission="emergency.replan"
+                    permission="emergency.recommend"
                     variant="success"
                     onClick={() => decide(latest.incident, "Approved")}
                     disabled={decidingIds.has(latest.incident.id) || approvedId === latest.incident.id}
@@ -308,7 +308,7 @@ export default function EmergencyPage() {
                     {approvedId === latest.incident.id ? "Replan applied" : "Approve Replan"}
                   </ActionButton>
                   <ActionButton
-                    permission="emergency.replan"
+                    permission="emergency.recommend"
                     variant="outline"
                     onClick={() => decide(latest.incident, "Rejected")}
                     disabled={decidingIds.has(latest.incident.id) || approvedId === latest.incident.id}

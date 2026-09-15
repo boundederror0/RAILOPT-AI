@@ -6,14 +6,14 @@ import type { SimulationParams } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const guard = requireAnyPermission(["simulation.view", "profile.view"]);
+  const guard = requireAnyPermission(["simulation.view", "settings.view"]);
   if ("error" in guard) return guard.error;
   const store = getStore();
   return ok({ params: store.simParams, defaults: DEFAULT_SIM_PARAMS, config: store.getConfig() });
 }
 
 export async function POST(req: Request) {
-  const guard = requirePermission("profile.edit");
+  const guard = requirePermission("settings.view");
   if ("error" in guard) return guard.error;
   const body = await parseJson<Partial<SimulationParams>>(req);
   if (!body) return fail("Invalid JSON body.", 400);

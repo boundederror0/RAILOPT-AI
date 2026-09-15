@@ -1,6 +1,7 @@
 import { getStore } from "@/lib/store";
 import { ok, fail, parseJson } from "@/lib/server-utils";
 import { requirePermission } from "@/lib/auth/server-auth";
+import { canAccessRequestDepartment, isDepartmentScoped } from "@/lib/rbac";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const store = getStore();
   const existing = store.getRequest(params.id);
   if (!existing) return fail("Maintenance request not found.", 404);
+
+  // Department-scoped postings may only edit requests belonging to their
+  // own department. Isolation is enforced server-side (not just the UI).
+  if (isDepartmentScoped(guard.user) && !canAccessRequestDepartment(guard.user, existing.department)) {
+    return fail("You can only manage maintenance requests for your department.", 403);
+  }
 
   const body = await parseJson<Record<string, unknown>>(req);
   if (!body) return fail("Invalid JSON body.", 400);

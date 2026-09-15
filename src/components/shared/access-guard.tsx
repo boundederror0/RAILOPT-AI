@@ -50,11 +50,11 @@ export function AccessGuard({
             </div>
             <h2 className="mt-4 text-lg font-semibold text-slate-900">Authentication Required</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Please select a demo user to access the RAILOPT AI platform.
+              Sign in with a RAILOPT demo posting to access this module.
             </p>
             <div className="mt-6 flex justify-center gap-3">
               <Button asChild>
-                <Link href="/demo-login">Select Demo User</Link>
+                <Link href="/login">Sign in</Link>
               </Button>
             </div>
           </div>

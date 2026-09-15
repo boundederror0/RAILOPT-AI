@@ -1,15 +1,9 @@
 import { cookies } from "next/headers";
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
-import {
-  DEMO_USERS,
-  getUserPermissions,
-  type Permission,
-  type User,
-} from "@/lib/rbac";
-
-export const AUTH_COOKIE = "railopt_session";
-const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
+import type { Permission } from "@/lib/rbac";
+import { getPosting, getUserPermissions, postingToUser, type User } from "@/lib/rbac";
+import { AUTH_COOKIE, SESSION_TTL_MS } from "./auth-config";
 
 // Session state must live on globalThis: in `next dev` each route handler is
 // compiled as a separate module instance, so module-level `let` state is not
@@ -83,7 +77,9 @@ export function getSessionUserFromCookie(cookieValue: string | null | undefined)
   if (!cookieValue) return null;
   const session = verifySessionToken(cookieValue);
   if (!session) return null;
-  return DEMO_USERS.find((u) => u.id === session.userId) ?? null;
+  const posting = getPosting(session.userId);
+  if (!posting) return null;
+  return postingToUser(posting);
 }
 
 export function getSessionUser(): User | null {

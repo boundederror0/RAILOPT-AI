@@ -1,0 +1,22 @@
+Total files changed: 18
+Total replacements: 95
+
+CHANGELOG
+E:/RAILOPT/src/app/(dashboard)/ai-analysis/page.tsx :: ai-analysis.view=>ai_analysis.view(x1)
+E:/RAILOPT/src/app/(dashboard)/approvals/page.tsx :: approval.view=>approvals.view(x1) approval.approve=>approvals.approve(x2)
+E:/RAILOPT/src/app/(dashboard)/live-operations/page.tsx :: live-operations.view=>live_operations.view(x1)
+E:/RAILOPT/src/app/(dashboard)/train-impact/page.tsx :: train-impact.view=>train_impact.view(x1)
+E:/RAILOPT/src/app/api/approvals/route.ts :: approval.view=>approvals.view(x1)
+E:/RAILOPT/src/app/api/approvals/[id]/decision/route.ts :: approval.approve=>approvals.approve(x1)
+E:/RAILOPT/src/app/api/assets/route.ts :: ai-analysis.view=>ai_analysis.view(x1) live-operations.view=>live_operations.view(x1)
+E:/RAILOPT/src/app/api/blocks/route.ts :: train-impact.view=>train_impact.view(x1) live-operations.view=>live_operations.view(x1)
+E:/RAILOPT/src/app/api/incidents/route.ts :: live-operations.view=>live_operations.view(x1)
+E:/RAILOPT/src/app/api/risk-analysis/route.ts :: ai-analysis.run=>ai_analysis.run(x1)
+E:/RAILOPT/src/app/api/teams/route.ts :: live-operations.view=>live_operations.view(x1)
+E:/RAILOPT/src/app/api/train-impact/route.ts :: train-impact.view=>train_impact.view(x1)
+E:/RAILOPT/src/app/api/trains/route.ts :: train-impact.view=>train_impact.view(x1) live-operations.view=>live_operations.view(x1)
+E:/RAILOPT/src/components/layout/app-shell.tsx :: live-operations.view=>live_operations.view(x1) approval.view=>approvals.view(x1)
+E:/RAILOPT/src/lib/rbac/authorization.ts :: ai-analysis.view=>ai_analysis.view(x1) train-impact.view=>train_impact.view(x1) live-operations.view=>live_operations.view(x1) approval.view=>approvals.view(x1)
+E:/RAILOPT/src/lib/rbac/permissions.ts :: ai-analysis.view=>ai_analysis.view(x1) ai-analysis.run=>ai_analysis.run(x1) train-impact.view=>train_impact.view(x1) live-operations.view=>live_operations.view(x1) live-operations.monitor=>live_operations.monitor(x1) live-operations.coordinate=>live_operations.coordinate(x1) approval.view=>approvals.view(x1) approval.recommend=>approvals.recommend(x1) approval.approve=>approvals.approve(x1)
+E:/RAILOPT/src/lib/rbac/postings.ts :: ai-analysis.view=>ai_analysis.view(x1) train-impact.view=>train_impact.view(x1) live-operations.view=>live_operations.view(x1) live-operations.monitor=>live_operations.monitor(x1) approval.view=>approvals.view(x1)
+E:/RAILOPT/src/lib/rbac/role-profiles.ts :: ai-analysis.view=>ai_analysis.view(x11) ai-analysis.run=>ai_analysis.run(x2) train-impact.view=>train_impact.view(x12) live-operations.view=>live_operations.view(x12) live-operations.monitor=>live_operations.monitor(x2) live-operations.coordinate=>live_operations.coordinate(x2) approval.view=>approvals.view(x12) approval.recommend=>approvals.recommend(x2) approval.approve=>approvals.approve(x2)

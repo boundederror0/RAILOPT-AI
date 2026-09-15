@@ -119,7 +119,7 @@ export default function LiveOperationsPage() {
   }
 
   return (
-    <AccessGuard requiredPermission="live-operations.view">
+    <AccessGuard requiredPermission="live_operations.view">
       <div>
         <PageHeader
           title="Live Operations"

@@ -182,6 +182,8 @@ export interface Approval {
   impact: string;
   confidence: number;
   createdBy: string;
+  /** Posting id of the human who created this recommendation (self-approval guard). */
+  createdByUserId?: string;
   createdAt: string;
   status: ApprovalStatus;
   decidedBy: string | null;

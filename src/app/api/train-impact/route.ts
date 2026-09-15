@@ -7,7 +7,7 @@ import type { Block } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const guard = requirePermission("train-impact.view");
+  const guard = requirePermission("train_impact.view");
   if ("error" in guard) return guard.error;
 
   const body = await parseJson<{ block?: Partial<Block> }>(req);

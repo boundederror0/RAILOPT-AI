@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const guard = requireAnyPermission([
     "dashboard.view",
-    "train-impact.view",
+    "train_impact.view",
     "optimizer.view",
-    "live-operations.view",
+    "live_operations.view",
     "simulation.view",
   ]);
   if ("error" in guard) return guard.error;

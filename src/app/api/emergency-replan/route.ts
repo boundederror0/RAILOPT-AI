@@ -1,6 +1,6 @@
 import { getStore } from "@/lib/store";
 import { ok, fail, parseJson } from "@/lib/server-utils";
-import { requirePermission } from "@/lib/auth/server-auth";
+import { requireAnyPermission } from "@/lib/auth/server-auth";
 import { validateIncidentInput } from "@/lib/validation";
 import { emergencyReplanService, incidentTypeFor } from "@/lib/ai";
 import type { Incident } from "@/lib/types";
@@ -8,8 +8,10 @@ import type { Incident } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const guard = requirePermission("emergency.replan");
+  const guard = requireAnyPermission(["emergency.create", "emergency.recommend"]);
   if ("error" in guard) return guard.error;
+
+  const canRecommend = guard.user.permissions.includes("emergency.recommend");
 
   const body = await parseJson<unknown>(req);
   const { error, data } = validateIncidentInput(body);
@@ -32,6 +34,24 @@ export async function POST(req: Request) {
   };
 
   store.addIncident(incident);
+
+  store.log({
+    action: "AI_INCIDENT",
+    entity: "Incident",
+    entityId: incident.id,
+    performedBy: guard.user.name,
+    details: `${guard.user.name} initiated incident response for ${incident.type} (${incident.severity}) at ${incident.section}.`,
+  });
+
+  // Incident filing requires emergency.create; generating the AI replan
+  // recommendation is restricted to postings with emergency.recommend.
+  if (!canRecommend) {
+    return ok(
+      { incident, recommendation: null, notice: "Incident recorded. Replanning requires emergency.recommend permission." },
+      201
+    );
+  }
+
   const recommendation = emergencyReplanService.replan(
     incident,
     store.getTrains(),
@@ -41,14 +61,6 @@ export async function POST(req: Request) {
   const updatedIncident = store.updateIncident(incident.id, {
     recommendedActions: recommendation.alternativePlans,
     recommendedBlock: recommendation.recommendedBlock,
-  });
-
-  store.log({
-    action: "AI_INCIDENT",
-    entity: "Incident",
-    entityId: incident.id,
-    performedBy: guard.user.name,
-    details: `${guard.user.name} initiated AI incident response for ${incident.type} (${incident.severity}) at ${incident.section}.`,
   });
 
   if (recommendation.recommendedBlock) {
@@ -61,6 +73,7 @@ export async function POST(req: Request) {
       impact: `Estimated disruption ≈ ${recommendation.estimatedDisruption} train-min. Human approval required before applying.`,
       confidence: incident.severity === "Critical" ? 93 : 86,
       createdBy: "RAILOPT AI",
+      createdByUserId: guard.user.id,
       riskReduction: recommendation.recommendedBlock.riskReduction,
       estimatedDelay: recommendation.estimatedDisruption,
     });

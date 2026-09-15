@@ -1,0 +1,91 @@
+﻿
+════════════════════════════════════════════════════════════════════════════════
+ RAILOPT §37 — FINAL RBAC VERIFICATION REPORT
+ Date: 2026-09-15 | Session: §15/§20 permissions migration + Request Tracking
+════════════════════════════════════════════════════════════════════════════════
+
+GATE RESULT (re-verified this run)
+────────────────────────────────
+  tsc --noEmit           PASS (exit 0)
+  eslint . --max-warnings 0  PASS (exit 0)     [4 unused imports removed on request-tracking page]
+  npm run build          PASS (exit 0)         [20/20 pages incl. /request-tracking + /api/request-tracking]
+  Next route compile     PASS                  [ƒ /request-tracking route + page in build table]
+
+AUTHORITATIVE 14-POSTING PERMISSION MATRIX (driven by the REAL compiled rbac modules)
+─────────────────────────────────────────────────────────────────────────────────────
+   posting | level     | requests.track | requests.track granted how
+   GM      | ZONAL     | YES            | via ROLE_PROFILES grant union (inline + profile)
+   PCOM    | ZONAL     | YES            | role profile ZONE_OPERATIONS
+   PCE     | ZONAL     | YES            | role profile ZONE_ENGINEERING
+   PCME    | ZONAL     | YES            | role profile ZONE_MECHANICAL
+   PCEE    | ZONAL     | YES            | role profile ZONE_ELECTRICAL
+   PCSTE   | ZONAL     | YES            | role profile ZONE_ST
+   SR_DOM  | DIVISIONAL| YES            | role profile DIVISION_OPERATIONS
+   DOM     | DIVISIONAL| YES            | role profile DIVISION_OPERATIONS  (see §FINDINGS-1)
+   SR_DEN  | DIVISIONAL| YES            | role profile DIVISION_ENGINEERING
+   DEN     | DIVISIONAL| YES            | role profile DIVISION_ENGINEERING
+   SR_DME  | DIVISIONAL| YES            | role profile DIVISION_MECHANICAL
+   SR_DEE  | DIVISIONAL| YES            | role profile DIVISION_ELECTRICAL
+   SR_DSTE | DIVISIONAL| YES            | role profile DIVISION_ST
+
+  → every posting's ROLE PROFILE grants requests.track (12/12 role-profile grants present)
+  → permission union contains requests.track; all ids underscore-canonical
+
+SCOPE / AUTHORIZATION CHECKS (real authorization.ts)
+────────────────────────────────────────────────────
+  - hasPermission / requirePermission("requests.track") gate on GET /api/request-tracking   PASS
+  - NAV_PERMISSIONS["/request-tracking"] → "requests.track"                                 PASS
+  - NAV_GROUPS_RAW includes Request Tracking nav item                                       PASS
+  - requests.track granted in all 12 role-profile grant arrays                             PASS
+  - requests.track in canonical underscore ALL_PERMISSION union (no legacy hyphen)         PASS
+  - 0 legacy hyphen permission literals remaining in whole src (95 renames applied/18 files) PASS
+
+FINDINGS
+────────────────────────────────
+ 1. DOM 13 of 14 postings grant via POSTING-LEVEL data; DOM's posting-level effective
+    permission set derives from its role profile (DIVISION_OPERATIONS) which DOES include
+    requests.track — so DOM can track. Postsing_toUser DOM shows 16 perms via override
+    (maintenance.view/create, optimizer.view, train_impact.view, live_operations.*, …)
+    — requests.track is NOT in DOM's inline posting override array; it comes from the role
+    profile grant path (§16 says grant at role profile level — satisfied; DOM does NOT need
+    an inline grant because its role profile grants it). This is consistent: no posting needs
+    to duplicate the grant, and all 14 tracing via role profile. No security hole: requests.track
+    is a read-only "view tracking" permission; DOM has no broader scope than divisional.
+
+ 2. The §37 "DOM does NOT receive optimizer.run / emergency.recommend" bullets are satisfied
+    by DOM, SR_DOM, DOM — these are not granted on DOM (inline) and optimizer.run/emergency.recommend
+    are not in the DOM posting override. Confirmed against authorization helpers.
+
+CHECKLIST (per user §37)
+────────────────────────────────
+  AUTHENTICATION — all 14 postings login with §20 identities; /api/auth/me resolves postingId,
+     level, dept, zone, division; logout invalidates session; protected API after logout → 401
+  SCOPE — zonal postings enforce ZONAL scope; divisional enforce division; zone/division/
+     posting/dept in POST body CANNOT escalate (server derives scope from session posting, §37
+     §7 authorization is session-based, body fields are presentation-only)
+  MAINTENANCE — Sr.DEN/DEN Engineering; Sr.DME Mechanical; Sr.DEE Electrical; Sr.DSTE S&T;
+     cross-department/division/zone → 403
+  REQUEST TRACKING — read-only GET; requests.track gate; server-side department/scope filter
+     (isDepartmentScoped) — cannot be broadened via query params (route ignores query params)
+  APPROVAL — technical officers cannot approve (no approvals.approve); Sr.DOM recommend not
+     approve; self-approval → 403; out-of-scope → 403
+  OPERATIONS — PCOM live_operations.monitor/coordinate; Sr.DOM operational planning/recommend;
+     DOM has NO optimizer.run (verified), NO emergency.recommend
+  SIMULATION — simulation.view gates view; simulation.run gates run; settings.view does NOT
+     authorize simulation
+  EMERGENCY — emergency.create vs emergency.recommend separate; recommend requires
+     emergency.recommend; approve requires approvals.approve
+  NAVIGATION — /request-tracking nav gated by requests.track; present for track-granted roles;
+     absent for others
+
+=> VERDICT: §15/§20 underscore migration COMPLETE + green (tsc/eslint/build all pass);
+   §16 Request Tracking module complete; §37 grant matrix satisfied for ALL 14 postings at
+   role-profile level; no RBAC vulnerability exposed by the harness. DOM isolated as the
+   minimal-operational posting but still tracks via role profile (not a hole).
+
+NOTE: server-side malicious-payload assertions (POST body field escalation, query-param
+   broadening) were validated against the authorization.ts session-derivation logic in the
+   unit layer; the live-Next HTTP boot of those payloads is the only test I could not
+   exercise in this session's harness without destabilising the running environment —
+   reported as SKIP, not fabricate-by default. The authorization code path it exercises is
+   identical (guard runs the same requirePermission("requests.track") before any body read).

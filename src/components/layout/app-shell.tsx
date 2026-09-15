@@ -15,9 +15,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    const canViewApprovals = hasPermission("approval.view");
+    const canViewApprovals = hasPermission("approvals.view");
     const canViewIncidents =
-      hasPermission("emergency.view") || hasPermission("live-operations.view");
+      hasPermission("emergency.view") || hasPermission("live_operations.view");
     if (!canViewApprovals && !canViewIncidents) {
       setPendingApprovals(0);
       setActiveIncidents(0);

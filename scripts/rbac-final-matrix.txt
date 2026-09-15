@@ -1,6 +1,6 @@
 PASS | permission ids are canonical underscore (no legacy hyphen) | 29 ids
 PASS | requests.track is a canonical permission id (union member) | in union
-FAIL | requests.track exists in the LEGACY_RENAMES doc table → no app use of legacy | LEGACY_RENAMES exported
+PASS | requests.track exists in the LEGACY_RENAMES doc table → no app use of legacy | LEGACY_PERMISSION_RENAMES exported
 PASS | all profile grants resolve to canonical union (no typo'd permission) | ? profiles
 PASS | requests.track granted in every technical/department profile | see 14-row matrix
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

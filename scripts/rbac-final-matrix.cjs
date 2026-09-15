@@ -80,8 +80,8 @@ record(
 );
 record(
   "requests.track exists in the LEGACY_RENAMES doc table → no app use of legacy",
-  permissions.LEGACY_RENAMES ? "PASS" : "FAIL",
-  "LEGACY_RENAMES exported"
+  permissions.LEGACY_PERMISSION_RENAMES ? "PASS" : "FAIL",
+  "LEGACY_PERMISSION_RENAMES exported"
 );
 
 // 2. every granted permission exists in the canonical union (no typo'd grants)

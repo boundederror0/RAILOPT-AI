@@ -211,6 +211,54 @@ export interface SimulationParams {
   simultaneousBlocks: number;
 }
 
+export type SimulationScenario = "accept" | "move" | "defer" | "reject";
+
+export interface SimulationWindow {
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+}
+
+export interface SimulationKpis {
+  trainsAffected: number;
+  maxDelay: number;
+  totalDelay: number;
+  conflicts: number;
+  blockStatus: string;
+}
+
+export interface SimulationImpactRow {
+  trainId: string;
+  number: string;
+  name: string;
+  route: string;
+  type: string;
+  scheduledTime: string;
+  affectedStation: string;
+  expectedDelay: number;
+  delaySeverity: string;
+  alternativeAction: string;
+  timeWindowStart: string;
+  timeWindowEnd: string;
+}
+
+export interface SimulationScenarioResult {
+  scenario: SimulationScenario;
+  requestId: string;
+  persisted: false;
+  proposedWindow: SimulationWindow;
+  chosenWindow: SimulationWindow | null;
+  kpis: SimulationKpis;
+  impacts: SimulationImpactRow[];
+  summary: string;
+  recommendation: string;
+  comparison: {
+    proposed: { trainsAffected: number; maxDelay: number; totalDelay: number };
+    chosen: { trainsAffected: number; maxDelay: number; totalDelay: number };
+    locked: boolean;
+  } | null;
+}
+
 export interface SimulationResult {
   expectedDelay: number;
   affectedTrains: number;

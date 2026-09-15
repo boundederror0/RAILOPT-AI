@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/shared/page-header";
 import { RiskGauge } from "@/components/shared/risk-gauge";
+import { AccessGuard } from "@/components/shared/access-guard";
 import { RequestDetailDrawer } from "@/components/maintenance/request-detail-drawer";
 import { api } from "@/lib/api";
 import type { MaintenanceRequest } from "@/lib/types";
@@ -139,7 +140,8 @@ export default function RequestTrackingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <AccessGuard requiredPermission="requests.track">
+      <div className="space-y-6">
       <PageHeader
         title="Request Tracking"
         subtitle="Read-only, live status of maintenance requests across your operational scope. Scope is enforced server-side from your posting; this view never broadens it."
@@ -270,6 +272,7 @@ export default function RequestTrackingPage() {
         onOpenChange={setDrawerOpen}
         request={selected}
       />
-    </div>
+      </div>
+    </AccessGuard>
   );
 }

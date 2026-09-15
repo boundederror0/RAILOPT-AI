@@ -71,6 +71,7 @@ export const NAV_PERMISSIONS: Record<string, Permission> = {
   "/historical-intelligence": "historical.view",
   "/analytics": "analytics.view",
   "/settings": "settings.view",
+  "/authority-access-control": "settings.view",
 };
 
 export function getNavPermission(path: string): Permission | undefined {
@@ -114,7 +115,10 @@ export function getAccessibleNavGroups(user: User | null | undefined) {
     },
     {
       label: "System",
-      items: [{ label: "Settings", href: "/settings", iconName: "Settings" }],
+      items: [
+        { label: "Settings", href: "/settings", iconName: "Settings" },
+        { label: "Authority & Access Control", href: "/authority-access-control", iconName: "ShieldCheck" },
+      ],
     },
   ];
 

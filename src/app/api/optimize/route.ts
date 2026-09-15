@@ -9,12 +9,13 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   const body = await parseJson<{ requestIds?: string[]; params?: Record<string, unknown>; simulate?: boolean }>(req);
-  const { error, data } = validateOptimizeRequest(body);
-  if (error) return fail(error, 400);
 
   const isSimulation = body?.simulate === true;
   const guard = requirePermission(isSimulation ? "simulation.run" : "optimizer.run");
   if ("error" in guard) return guard.error;
+
+  const { error, data } = validateOptimizeRequest(body);
+  if (error) return fail(error, 400);
 
   const store = getStore();
   const requests = store.getRequests();

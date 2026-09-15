@@ -6,7 +6,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+async function request<T>(url: string, init?: RequestInit & { signal?: AbortSignal }): Promise<T> {
   const res = await fetch(url, {
     headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
     ...init,
@@ -52,6 +52,8 @@ export const api = {
   getSimulationParams: <T>() => request<T>("/api/simulation"),
   saveSimulationParams: <T>(body: unknown) =>
     request<T>("/api/simulation", { method: "POST", body: JSON.stringify(body) }),
+  runSimulation: <T>(body: unknown, signal?: AbortSignal) =>
+    request<T>("/api/simulation", { method: "POST", body: JSON.stringify(body), signal }),
   emergencyReplan: <T>(body: unknown) =>
     request<T>("/api/emergency-replan", { method: "POST", body: JSON.stringify(body) }),
   getAnalytics: <T>(range: string) => request<T>(`/api/analytics?range=${range}`),

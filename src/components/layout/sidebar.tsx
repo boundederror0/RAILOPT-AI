@@ -19,6 +19,7 @@ import {
   Settings,
   ListOrdered,
   ShieldCheck,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { getAccessibleNavGroups } from "@/lib/rbac";
@@ -40,13 +41,19 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   ShieldCheck,
 };
 
-export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {
+export function Sidebar({
+  pendingCount = 0,
+  onClose,
+}: {
+  pendingCount?: number;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const { user } = useAuth();
   const navGroups = getAccessibleNavGroups(user);
 
   return (
-    <aside className="flex h-screen w-[240px] flex-col bg-sidebar text-slate-300">
+    <aside className="flex h-screen w-[min(85vw,320px)] flex-col bg-sidebar text-slate-300 lg:w-[240px]">
       {/* Brand */}
       <div className="flex items-center gap-3.5 border-b border-white/10 px-4 py-5">
         <Image
@@ -62,6 +69,14 @@ export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {
             Intelligent Railway Maintenance & Block Planning
           </span>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 lg:hidden"
+          aria-label="Close navigation"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -88,6 +103,7 @@ export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {
                           : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
                       )}
                       title={item.label}
+                      onClick={onClose}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
                       <span className="truncate">{item.label}</span>

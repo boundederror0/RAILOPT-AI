@@ -15,6 +15,7 @@ exports.ROLE_PROFILES = {
             "optimizer.view",
             "train_impact.view",
             "simulation.view",
+            "simulation.run",
             "live_operations.view",
             "emergency.view",
             "approvals.view",

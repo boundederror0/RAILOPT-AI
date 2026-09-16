@@ -47,6 +47,13 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
   if (!isAuthenticated || !user) {
     return (
       <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur">
+        <button
+          onClick={onToggleSidebar}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 lg:hidden"
+          aria-label="Open navigation"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <span className="truncate font-medium text-slate-700">Madurai Division Operations</span>
           <span className="text-slate-300">/</span>
@@ -76,8 +83,8 @@ export function Topbar({ pendingApprovals, activeIncidents, onToggleSidebar }: T
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur">
       <button
         onClick={onToggleSidebar}
-        className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 lg:hidden"
-        aria-label="Toggle navigation"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 lg:hidden"
+        aria-label="Open navigation"
       >
         <Menu className="h-5 w-5" />
       </button>

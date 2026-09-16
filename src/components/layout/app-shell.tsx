@@ -14,6 +14,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setSidebarOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     const canViewApprovals = hasPermission("approvals.view");
     const canViewIncidents =
@@ -72,12 +95,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
-            className="bg-slate-950/60"
+            className="flex-1 animate-backdrop-in bg-slate-950/60"
             onClick={() => setSidebarOpen(false)}
             aria-hidden
           />
-          <div className="relative bg-sidebar">
-            <Sidebar pendingCount={pendingApprovals} />
+          <div className="relative animate-drawer-in">
+            <Sidebar
+              pendingCount={pendingApprovals}
+              onClose={() => setSidebarOpen(false)}
+            />
           </div>
         </div>
       )}

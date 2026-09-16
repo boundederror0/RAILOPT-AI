@@ -69,6 +69,7 @@ exports.NAV_PERMISSIONS = {
     "/historical-intelligence": "historical.view",
     "/analytics": "analytics.view",
     "/settings": "settings.view",
+    "/authority-access-control": "settings.view",
 };
 function getNavPermission(path) {
     return exports.NAV_PERMISSIONS[path];
@@ -110,7 +111,10 @@ function getAccessibleNavGroups(user) {
         },
         {
             label: "System",
-            items: [{ label: "Settings", href: "/settings", iconName: "Settings" }],
+            items: [
+                { label: "Settings", href: "/settings", iconName: "Settings" },
+                { label: "Authority & Access Control", href: "/authority-access-control", iconName: "ShieldCheck" },
+            ],
         },
     ];
     return NAV_GROUPS_RAW.map((group) => ({

@@ -55,6 +55,8 @@ const config: Config = {
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "slide-in": "slideIn 0.2s ease-out",
         "fade-in": "fadeIn 0.3s ease-out",
+        "drawer-in": "drawerIn 0.2s ease-out",
+        "backdrop-in": "backdropIn 0.2s ease-out",
       },
       keyframes: {
         slideIn: {
@@ -64,6 +66,14 @@ const config: Config = {
         fadeIn: {
           "0%": { opacity: "0", transform: "translateY(4px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        drawerIn: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(0)" },
+        },
+        backdropIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
         },
       },
     },

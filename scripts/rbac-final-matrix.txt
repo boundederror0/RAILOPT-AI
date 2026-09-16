@@ -6,7 +6,7 @@ PASS | requests.track granted in every technical/department profile | see 14-row
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 POSTING (id/level/dept/zone/division) | requests.track | scope
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-GM        ZONAL        ADMINISTRATION Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 15 perms
+GM        ZONAL        ADMINISTRATION Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 16 perms
 PCOM      ZONAL        OPERATING      Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 23 perms
 PCE       ZONAL        ENGINEERING    Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 14 perms
 PCME      ZONAL        MECHANICAL     Southern Railway ?                                  | track     | ? (isDepartmentScoped missing)                   | 14 perms

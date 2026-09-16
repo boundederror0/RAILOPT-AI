@@ -22,10 +22,21 @@ function Login($posting, $division) {
 $unauth = Post-Json "$base/api/simulation" @{ requestId = "MR-2026-0001"; scenario = "accept" } $null
 "1) unauth run            -> {0} {1}" -f $unauth.Code, ($unauth.Body.Substring(0, [Math]::Min(80, $unauth.Body.Length)))
 
-# 2) Authenticated but no simulation.run (GM) -> 403
+# 2) GM (has simulation.run since profile grant) -> 200
 $gm = Login "GM" "ZONE"
-$noPerm = Post-Json "$base/api/simulation" @{ requestId = "MR-2026-0001"; scenario = "accept" } $jar
-"2) GM run (no sim.run)   -> {0} {1}" -f $noPerm.Code, ($noPerm.Body.Substring(0, [Math]::Min(80, $noPerm.Body.Length)))
+Set-Content "$env:TEMP\simtest\gm.txt" -Value $gm.Body
+$gmRun = Post-Json "$base/api/simulation" @{ requestId = "MR-2026-0001"; scenario = "accept" } $jar
+$gmObj = $gmRun.Body | ConvertFrom-Json
+"2) GM run (sim.run)      -> {0}  trains={1} persisted={2}" -f $gmRun.Code, $gmObj.result.kpis.trainsAffected, $gmObj.result.persisted
+
+# 2b) POST without any scenario (no guard match -> falls to saveParams, needs settings.view) -> 200
+$gmNoScn = Post-Json "$base/api/simulation" @{} $jar
+"2b) GM no-scenario save  -> {0}" -f $gmNoScn.Code
+
+# 2c) DOM (no simulation.run) -> 403
+$dom = Login "DOM" "MDU"
+$domRun = Post-Json "$base/api/simulation" @{ requestId = "MR-2026-0001"; scenario = "accept" } $jar
+"2c) DOM run (no sim.run) -> {0} {1}" -f $domRun.Code, ($domRun.Body.Substring(0, [Math]::Min(80, $domRun.Body.Length)))
 
 # 3) PCOM (has simulation.run) -> 200 accept
 $pcom = Login "PCOM" "ZONE"

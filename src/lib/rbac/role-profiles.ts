@@ -35,6 +35,7 @@ export const ROLE_PROFILES: Record<RoleProfileId, RoleProfile> = {
       "optimizer.view",
       "train_impact.view",
       "simulation.view",
+      "simulation.run",
       "live_operations.view",
       "emergency.view",
       "approvals.view",
